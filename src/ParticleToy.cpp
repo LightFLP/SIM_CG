@@ -8,6 +8,7 @@
 #include "imageio.h"
 #include "EulerSolver.h"
 #include "ConstantForce.h"
+#include "RK4Solver.h"
 
 #include <vector>
 #include <stdlib.h>
@@ -17,8 +18,9 @@
 
 /* macros */
 
-Solver* solver = new EulerSolver();
+Solver* solver = new RK4Solver();
 std::vector<Force*> forces = { new ConstantForce(Vec2f(0, -9.81))};
+std::vector<Constraint*> constraint_forces = {new CircularWireConstraint(Vec2f(0, 0), 0.2)};
 
 /* global variables */
 
@@ -89,11 +91,15 @@ static void init_system(void)
 	pVector.push_back(new Particle(center + offset + offset));
 	pVector.push_back(new Particle(center + offset + offset + offset));
 	
+	for (Particle* p : pVector){
+		forces[0]->register_particle(p); //Gravity
+	}
+	constraint_forces[0]->register_particle(pVector[0]);
+
+	forces.push_back(new SpringForce(pVector[0], pVector[1], dist, 50.0, 0.2));
 	// You shoud replace these with a vector generalized forces and one of
 	// constraints...
-	delete_this_dummy_spring = new SpringForce(pVector[0], pVector[1], dist, 1.0, 1.0);
 	delete_this_dummy_rod = new RodConstraint(pVector[1], pVector[2], dist);
-	delete_this_dummy_wire = new CircularWireConstraint(pVector[0], center, dist);
 }
 
 /*
@@ -150,18 +156,16 @@ static void draw_particles ( void )
 
 static void draw_forces ( void )
 {
-	// change this to iteration over full set
-	if (delete_this_dummy_spring)
-		delete_this_dummy_spring->draw();
+	for (Force* f : forces){
+		f->draw();
+	}
 }
 
 static void draw_constraints ( void )
 {
-	// change this to iteration over full set
-	if (delete_this_dummy_rod)
-		delete_this_dummy_rod->draw();
-	if (delete_this_dummy_wire)
-		delete_this_dummy_wire->draw();
+	for (Constraint* c : constraint_forces){
+		c->draw();
+	}
 }
 
 /*
@@ -239,6 +243,7 @@ static void key_func ( unsigned char key, int x, int y )
 
 	case ' ':
 		dsim = !dsim;
+		if (dsim) for (Particle *p : pVector) p->reset();
 		break;
 	}
 }
@@ -272,18 +277,14 @@ static void reshape_func ( int width, int height )
 static void idle_func ( void )
 {
 	if ( dsim ){
-		for (Force *f : forces){
-			f->calculate_forces(pVector, dt);
-		}
-		for (int i = 0; i < pVector.size(); ++i){
-			pVector[i]->m_ForceAccum = 0;
-			for (Force *f : forces){
-				pVector[i]->m_ForceAccum += f->get_force_at(i);
-			}
-		}
+		for (Particle* p : pVector) p->m_ForceAccum = Vec2f(0, 0); // Clear forces
+		for (Force *f : forces) f->calculate_forces(); // Calculate all forces
+		for (Constraint *c : constraint_forces) c->calculate_forces();
 		solver->simulation_step( pVector, dt );
+	}else{
+		get_from_UI();
+		remap_GUI();
 	}
-	else        {get_from_UI();remap_GUI();}
 
 	glutSetWindow ( win_id );
 	glutPostRedisplay ();
@@ -347,7 +348,7 @@ int main ( int argc, char ** argv )
 
 	if ( argc == 1 ) {
 		N = 64;
-		dt = 0.001f;
+		dt = 0.0001f;
 		d = 5.f;
 		fprintf ( stderr, "Using defaults : N=%d dt=%g d=%g\n",
 			N, dt, d );
@@ -368,8 +369,8 @@ int main ( int argc, char ** argv )
 	
 	init_system();
 	
-	win_x = 512;
-	win_y = 512;
+	win_x = 1024;
+	win_y = 1024;
 	open_glut_window ();
 
 	glutMainLoop ();
