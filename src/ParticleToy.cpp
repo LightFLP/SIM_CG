@@ -6,16 +6,19 @@
 #include "RodConstraint.h"
 #include "CircularWireConstraint.h"
 #include "imageio.h"
+#include "EulerSolver.h"
+#include "ConstantForce.h"
 
 #include <vector>
 #include <stdlib.h>
 #include <stdio.h>
 #include <GL/glut.h>
 
+
 /* macros */
 
-/* external definitions (from solver) */
-extern void simulation_step( std::vector<Particle*> pVector, float dt );
+Solver* solver = new EulerSolver();
+std::vector<Force*> forces = { new ConstantForce(Vec2f(0, -9.81))};
 
 /* global variables */
 
@@ -268,7 +271,18 @@ static void reshape_func ( int width, int height )
 
 static void idle_func ( void )
 {
-	if ( dsim ) simulation_step( pVector, dt );
+	if ( dsim ){
+		for (Force *f : forces){
+			f->calculate_forces(pVector, dt);
+		}
+		for (int i = 0; i < pVector.size(); ++i){
+			pVector[i]->m_ForceAccum = 0;
+			for (Force *f : forces){
+				pVector[i]->m_ForceAccum += f->get_force_at(i);
+			}
+		}
+		solver->simulation_step( pVector, dt );
+	}
 	else        {get_from_UI();remap_GUI();}
 
 	glutSetWindow ( win_id );
@@ -333,7 +347,7 @@ int main ( int argc, char ** argv )
 
 	if ( argc == 1 ) {
 		N = 64;
-		dt = 0.1f;
+		dt = 0.001f;
 		d = 5.f;
 		fprintf ( stderr, "Using defaults : N=%d dt=%g d=%g\n",
 			N, dt, d );

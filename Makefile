@@ -1,6 +1,7 @@
-INC_WINDOWS = include/windows
+INC_WINDOWS = ./include/windows
 INC_LINUX   = include/linux
 INC_COMMON  = include/common
+
 
 ifeq ($(OS),Windows_NT)
 	RM = rm -vf # might have to be adjusted to del for some Windows distros
