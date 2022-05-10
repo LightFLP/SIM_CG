@@ -199,12 +199,14 @@ static void get_from_UI ()
 	}
 
 	if ( mouse_down[2] ) {
+
 	}
 
 	hi = (int)((       hmx /(float)win_x)*N);
 	hj = (int)(((win_y-hmy)/(float)win_y)*N);
 
 	if( mouse_release[0] ) {
+		
 	}
 
 	omx = mx;
