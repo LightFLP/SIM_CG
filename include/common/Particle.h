@@ -10,7 +10,7 @@ public:
 	virtual ~Particle(void);
 
 	void reset();
-	void draw();
+	void draw(bool show_velocity, bool show_force);
 
 	Vec2f m_ConstructPos;
 

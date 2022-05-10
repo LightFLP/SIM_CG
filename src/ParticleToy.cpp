@@ -1,6 +1,8 @@
 // ParticleToy.cpp : Defines the entry point for the console application.
 //
 
+#include <gfx/geom3d.h>
+
 #include "Particle.h"
 #include "SpringForce.h"
 #include "RodConstraint.h"
@@ -40,6 +42,10 @@ static int mouse_release[3];
 static int mouse_shiftclick[3];
 static int omx, omy, mx, my;
 static int hmx, hmy;
+
+// booleans
+static bool show_velocity = false;
+static bool show_force = false;
 
 static SpringForce * delete_this_dummy_spring = NULL;
 static RodConstraint * delete_this_dummy_rod = NULL;
@@ -150,7 +156,7 @@ static void draw_particles ( void )
 
 	for(int ii=0; ii< size; ii++)
 	{
-		pVector[ii]->draw();
+		pVector[ii]->draw(show_velocity, show_force);
 	}
 }
 
@@ -245,7 +251,15 @@ static void key_func ( unsigned char key, int x, int y )
 		dsim = !dsim;
 		if (dsim) for (Particle *p : pVector) p->reset();
 		break;
-	}
+
+    case 'v':
+        show_velocity = !show_velocity;
+        break;
+
+    case 'b':
+        show_force = !show_force;
+        break;
+    }
 }
 
 static void mouse_func ( int button, int state, int x, int y )
@@ -282,6 +296,25 @@ static void idle_func ( void )
 		for (Constraint *c : constraint_forces) c->calculate_forces(); // Contribute
 		// Solve C*x = b 
 		solver->simulation_step( pVector, dt );
+
+        if (mouse_down[0]) {
+            float q = mx / (float)win_x;
+            float r = (win_y - my) / (float)win_y;
+            q = q * 2 - 1;
+            r = r * 2 - 1;
+//            printf("mousepos %f., %f.\n", q, r);
+            Vec2f min = {q - 0.03, r - 0.03};
+            Vec2f max = {q + 0.03, r + 0.03};
+
+            int idx = 0;
+            for (Particle* p : pVector) {
+                if (is_inside_bbox(p->m_Position, min, max)) {
+                    printf("Particle %d\n", idx);
+//                    printf("pos %f., %f.\n\n", p->m_Position[0], p->m_Position[1]);
+                }
+                idx++;
+            }
+        }
 	}else{
 		get_from_UI();
 		remap_GUI();
@@ -363,6 +396,9 @@ int main ( int argc, char ** argv )
 	printf ( "\t Toggle construction/simulation display with the spacebar key\n" );
 	printf ( "\t Dump frames by pressing the 'd' key\n" );
 	printf ( "\t Quit by pressing the 'q' key\n" );
+
+	printf ( "\t Show the velocities with the 'v' key\n" );
+	printf ( "\t Show the forces with the 'b' key\n" );
 
 	dsim = 0;
 	dump_frames = 0;
