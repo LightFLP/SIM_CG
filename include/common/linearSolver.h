@@ -13,7 +13,9 @@
 // Matrix class the solver will accept
 class implicitMatrix
 {
+  
  public:
+  // r=A*x
   virtual void matVecMult(double x[], double r[]) = 0;
 };
 
@@ -22,6 +24,7 @@ class implicitMatrixWithTrans : public implicitMatrix
 {
  public:
   virtual void matVecMult(double x[], double r[]) = 0;
+  // r = A'*x
   virtual void matTransVecMult(double x[], double r[]) = 0;
 };
 

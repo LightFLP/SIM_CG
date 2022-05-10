@@ -1,5 +1,6 @@
 #include <Particle.h>
 #include <vector>
+#include <linearSolver.h>
 
 class Constraint{
     protected:
@@ -10,4 +11,5 @@ class Constraint{
         }
         virtual void calculate_forces(){};
         virtual void draw(){};
+        virtual void contribute(implicitMatrix *C){};
 };

@@ -279,7 +279,8 @@ static void idle_func ( void )
 	if ( dsim ){
 		for (Particle* p : pVector) p->m_ForceAccum = Vec2f(0, 0); // Clear forces
 		for (Force *f : forces) f->calculate_forces(); // Calculate all forces
-		for (Constraint *c : constraint_forces) c->calculate_forces();
+		for (Constraint *c : constraint_forces) c->calculate_forces(); // Contribute
+		// Solve C*x = b 
 		solver->simulation_step( pVector, dt );
 	}else{
 		get_from_UI();
