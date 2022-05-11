@@ -5,11 +5,15 @@
 
 class CircularWireConstraint : public Constraint {
  public:
-  CircularWireConstraint(const Vec2f & center, const double radius);
+  CircularWireConstraint(Particle* p, int p_index, int c_index, const Vec2 & center, const double radius);
 
   virtual void draw();
-  virtual void calculate_forces();
+
+  virtual double eval_C();
+  virtual double eval_Cdot();
+  virtual void eval_J();
+  virtual void eval_Jdot();
  private:
-  Vec2f const m_center;
+  Vec2 const m_center;
   double const m_radius;
 };

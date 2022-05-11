@@ -51,15 +51,15 @@ double ConjGrad(int n, implicitMatrix *A, double x[], double b[],
   double *t = (double *) malloc(sizeof(double) * n);
   double *temp = (double *) malloc(sizeof(double) * n);
 
-  vecAssign(n, x, b);
+  vecAssign(n, x, b); // x = b;
 
-  vecAssign(n, r, b);
-  A->matVecMult(x, temp);
-  vecDiffEqual(n, r, temp);
+  vecAssign(n, r, b); // r = b;
+  A->matVecMult(x, temp); // temp = A*x;
+  vecDiffEqual(n, r, temp); // r = r - temp = r - A*x;
 
-  rSqrLen = vecSqrLen(n, r);
+  rSqrLen = vecSqrLen(n, r); // rSqrLen = dot(r, r)
 
-  vecAssign(n, d, r);
+  vecAssign(n, d, r); // d = r
 
   i = 0;
   if (*steps)
@@ -70,31 +70,31 @@ double ConjGrad(int n, implicitMatrix *A, double x[], double b[],
   if (rSqrLen > epsilon)
     while (i < iMax) {	
       i++;
-      A->matVecMult(d, t);
-      u = vecDot(n, d, t);
+      A->matVecMult(d, t); //t = A*d
+      u = vecDot(n, d, t); //u = dot(d, t)
       
       if (u == 0) {
-	printf("(SolveConjGrad) d'Ad = 0\n");
-	break;
+        printf("(SolveConjGrad) d'Ad = 0\n");
+        break;
       }
       
       // How far should we go?
       alpha = rSqrLen / u;
       
       // Take a step along direction d
-      vecAssign(n, temp, d);
-      vecTimesScalar(n, temp, alpha);
-      vecAddEqual(n, x, temp);
+      vecAssign(n, temp, d); // temp = d
+      vecTimesScalar(n, temp, alpha); //temp *= alpha
+      vecAddEqual(n, x, temp); // x += temp = alpha * d
       
       if (i & 0x3F) {
-	vecAssign(n, temp, t);
-	vecTimesScalar(n, temp, alpha);
-	vecDiffEqual(n, r, temp);
+        vecAssign(n, temp, t);       // temp = t
+        vecTimesScalar(n, temp, alpha); // temp *= alpha
+        vecDiffEqual(n, r, temp); //r -= temp = alpha*t
       } else {
-	// For stability, correct r every 64th iteration
-	vecAssign(n, r, b);
-	A->matVecMult(x, temp);
-	vecDiffEqual(n, r, temp);
+        // For stability, correct r every 64th iteration
+        vecAssign(n, r, b);
+        A->matVecMult(x, temp);
+        vecDiffEqual(n, r, temp);
       }
       
       rSqrLenOld = rSqrLen;
@@ -102,7 +102,7 @@ double ConjGrad(int n, implicitMatrix *A, double x[], double b[],
       
       // Converged! Let's get out of here
       if (rSqrLen <= epsilon)
-	break;			    
+	      break;			    
       
       // Change direction: d = r + beta * d
       beta = rSqrLen/rSqrLenOld;

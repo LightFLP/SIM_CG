@@ -4,7 +4,7 @@
 
 #include <valarray>
 
-typedef std::vector<Vec2f> MathVec;
+typedef std::vector<Vec2> MathVec;
 
 
 class RK4Solver : public Solver{

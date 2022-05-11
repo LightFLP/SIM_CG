@@ -2,8 +2,8 @@
 
 class ConstantForce : public Force{
     public:
-        Vec2f m_constant;
-        ConstantForce(Vec2f acceleration){
+        Vec2 m_constant;
+        ConstantForce(Vec2 acceleration){
             m_constant = acceleration;
         }
         
