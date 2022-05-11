@@ -34,6 +34,8 @@ static int frame_number;
 
 // static Particle *pList;
 static std::vector<Particle*> pVector;
+static Particle* mouseParticle;
+static int was_selected;
 
 static int win_id;
 static int win_x, win_y;
@@ -288,6 +290,69 @@ static void reshape_func ( int width, int height )
 	win_y = height;
 }
 
+bool check_bit(int number, int pos)
+{
+    return (number >> pos) & 1U;
+}
+
+void set_bit(int& number, int pos)
+{
+    number |= 1UL << pos;
+}
+
+void clear_bit(int& number, int pos)
+{
+    number &= ~(1UL << pos);
+}
+
+static void mouse_interact ()
+{
+    if (mouse_down[0]) {
+
+        // Update the position of the mouse particle
+        float q = mx / (float)win_x;
+        float r = (win_y - my) / (float)win_y;
+        q = q * 2 - 1;
+        r = r * 2 - 1;
+        mouseParticle->m_Position = Vec2f(q, r);
+
+        // Update the velocity of the mouse particle
+        float o_q = omx / (float)win_x;
+        float o_r = (win_y - omy) / (float)win_y;
+        o_q = o_q * 2 - 1;
+        o_r = o_r * 2 - 1;
+        mouseParticle->m_Velocity = Vec2f(q - o_q, r - o_r);
+
+        // Don't add more particles if we are already dragging one
+        if (was_selected > 0) return;
+
+        // Bounding box of the selectable particles
+        const float h = 0.03;
+        Vec2f min = {q - h, r - h};
+        Vec2f max = {q + h, r + h};
+
+        int idx = 0;
+        for (Particle* p : pVector) {
+            if (!check_bit(was_selected, idx) && is_inside_bbox(p->m_Position, min, max)) {
+                float dist = sqrt(pow(mouseParticle->m_Position[0] - p->m_Position[0], 2) + pow(mouseParticle->m_Position[1] - p->m_Position[1], 2));
+                forces.push_back(new SpringForce(p, mouseParticle, dist, 50.0, 0.2));
+                set_bit(was_selected, idx);
+            }
+            idx++;
+        }
+    }
+
+    // Remove all mouse spring forces from the list
+    if (!mouse_down[0] && was_selected > 0) {
+        int idx = 0;
+        while (was_selected > 0) {
+            if (check_bit(was_selected, idx)) forces.pop_back();
+            clear_bit(was_selected, idx);
+            idx++;
+        }
+    }
+}
+
 static void idle_func ( void )
 {
 	if ( dsim ){
@@ -297,24 +362,7 @@ static void idle_func ( void )
 		// Solve C*x = b 
 		solver->simulation_step( pVector, dt );
 
-        if (mouse_down[0]) {
-            float q = mx / (float)win_x;
-            float r = (win_y - my) / (float)win_y;
-            q = q * 2 - 1;
-            r = r * 2 - 1;
-//            printf("mousepos %f., %f.\n", q, r);
-            Vec2f min = {q - 0.03, r - 0.03};
-            Vec2f max = {q + 0.03, r + 0.03};
-
-            int idx = 0;
-            for (Particle* p : pVector) {
-                if (is_inside_bbox(p->m_Position, min, max)) {
-                    printf("Particle %d\n", idx);
-//                    printf("pos %f., %f.\n\n", p->m_Position[0], p->m_Position[1]);
-                }
-                idx++;
-            }
-        }
+        mouse_interact();
 	}else{
 		get_from_UI();
 		remap_GUI();
@@ -403,6 +451,8 @@ int main ( int argc, char ** argv )
 	dsim = 0;
 	dump_frames = 0;
 	frame_number = 0;
+
+    mouseParticle = new Particle(Vec2f(0,0));
 	
 	init_system();
 	
