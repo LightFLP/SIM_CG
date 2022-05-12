@@ -1,3 +1,4 @@
+#pragma once
 #ifndef LINEAR_SOLVER_H
 #define LINEAR_SOLVER_H
 
@@ -73,13 +74,13 @@ class implicitMatrixWithTrans : public implicitMatrix
 };
 
 
+
 class implicitJWJt : public implicitMatrix
 {
     implicitMatrixWithTrans* J;
-    private:
-      static void vecMultComp(int n, double x[], double y[]){
+    void vecMultComp(int n, double x[], double y[]){
         for (int i = 0; i < n; i++) x[i] *= y[i];
-      }
+    }
 
   public:
     double* W;
@@ -112,6 +113,5 @@ void vecAssign(int n, double v1[], double v2[]);
 void vecTimesScalar(int n, double v[], double s);
 double vecDot(int n, double v1[], double v2[]);
 double vecSqrLen(int n, double v[]);
-
 
 #endif

@@ -8,6 +8,7 @@
 #include "EulerSolvers.h"
 #include "RK4Solver.h"
 #include "Scene.h"
+#include "DragForce.h"
 
 #include <vector>
 #include <stdlib.h>
@@ -48,10 +49,6 @@ static int hmx, hmy;
 static bool show_velocity = false;
 static bool show_force = false;
 
-static SpringForce * delete_this_dummy_spring = NULL;
-static RodConstraint * delete_this_dummy_rod = NULL;
-static CircularWireConstraint * delete_this_dummy_wire = NULL;
-
 
 /*
 ----------------------------------------------------------------------
@@ -62,18 +59,6 @@ free/clear/allocate simulation data
 static void free_data ( void )
 {
 	pVector.clear();
-	if (delete_this_dummy_rod) {
-		delete delete_this_dummy_rod;
-		delete_this_dummy_rod = NULL;
-	}
-	if (delete_this_dummy_spring) {
-		delete delete_this_dummy_spring;
-		delete_this_dummy_spring = NULL;
-	}
-	if (delete_this_dummy_wire) {
-		delete delete_this_dummy_wire;
-		delete_this_dummy_wire = NULL;
-	}
 }
 
 static void clear_data ( void )
@@ -478,7 +463,7 @@ static void populate_globals(){
 	double* ksC = (double*) malloc(sizeof(double) * m);
 	double* kdC = (double*) malloc(sizeof(double) * m);
 
-	// Jq = Jdot * Qdot
+	// Jq = Jdot * qdot
 	if (populate_globals_verbose) {
 		printf("\n< Jq <- Jdot*qdot>\n");
 		printf("\nglobal_qdot:\n");
@@ -635,7 +620,7 @@ int main ( int argc, char ** argv )
 
 	if ( argc == 1 ) {
 		N = 64;
-		dt = 1e-3f;
+		dt = 1e-2f;
 		d = 5.f;
 		fprintf ( stderr, "Using defaults : N=%d dt=%g d=%g\n",
 			N, dt, d );

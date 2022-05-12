@@ -2,6 +2,7 @@
 
 #include "Particle.h"
 #include "Constraint.h"
+#include "linearSolver.h"
 
 class CircularWireConstraint : public Constraint {
  public:
