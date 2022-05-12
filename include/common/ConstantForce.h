@@ -1,3 +1,5 @@
+#pragma once
+
 #include <Force.h>
 
 class ConstantForce : public Force{

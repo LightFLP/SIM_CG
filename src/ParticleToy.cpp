@@ -4,14 +4,10 @@
 #include <gfx/geom3d.h>
 
 #include "Particle.h"
-#include "SpringForce.h"
-#include "RodConstraint.h"
-#include "CircularWireConstraint.h"
 #include "imageio.h"
 #include "EulerSolver.h"
-#include "ConstantForce.h"
 #include "RK4Solver.h"
-#include "DragForce"
+#include "Scene.h"
 
 #include <vector>
 #include <stdlib.h>
@@ -23,6 +19,7 @@
 
 Solver* solver = new RK4Solver();
 std::vector<Force*> forces = std::vector<Force*>();
+std::vector<Force*> mouseForces = std::vector<Force*>();
 std::vector<Constraint*> constraints = std::vector<Constraint*>();
 
 /* global variables */
@@ -36,7 +33,8 @@ static int frame_number;
 // static Particle *pList;
 static std::vector<Particle*> pVector;
 static Particle* mouseParticle;
-static int was_selected;
+static int particle_selected = false;
+static int scene_int = 1;
 
 static int win_id;
 static int win_x, win_y;
@@ -143,38 +141,34 @@ static void init_system(void)
 	}
 	exit(0);
 #endif
+    // Make sure the simulation is paused
+    dsim = false;
 
-	const double dist = 0.2;
-	const Vec2 center(0.0, 0.0);
-	const Vec2 offset(dist, 0.0);
+    // Clear all lists
+    pVector.clear();
+    forces.clear();
+    mouseForces.clear();
+    constraints.clear();
 
-	// Create three particles, attach them to each other, then add a
-	// circular wire constraint to the first.
+    // Load new scene
+    switch (scene_int) {
+        case 1:
+            Scene::loadDefault(pVector, forces, constraints);
+            break;
+        case 2:
+            Scene::loadDoubleCircle(pVector, forces, constraints);
+            break;
+        case 3:
+            Scene::loadCloth(pVector, forces, constraints);
+            break;
+        default:
+            Scene::loadDefault(pVector, forces, constraints);
+    }
 
-	pVector.push_back(new Particle(center + offset));
-	pVector.push_back(new Particle(center + offset + offset ));
-	pVector.push_back(new Particle(center + offset + offset + offset ));
-	// pVector.push_back(new Particle(center + offset + offset + offset + offset));
-	
-	forces.push_back(new ConstantForce(Vec2(0, -9.81))); // Graivty
-	forces.push_back(new DragForce(0.05)); // drag
-
-	bool skip = false;
-	for (Particle* p : pVector){
-		if (skip){
-			skip = false;
-			continue;
-		}
-		forces[0]->register_particle(p); //Gravity
-		forces[1]->register_particle(p);
-	}
-
-
-	forces.push_back(new SpringForce(pVector[0], pVector[1], dist, 500.0, 0.2));
-	
-	constraints.push_back(new CircularWireConstraint(pVector[0], 0, 0, Vec2(0, 0), dist));
-	constraints.push_back(new CircularWireConstraint(pVector[1], 1, 1, 3*offset, dist));
-	constraints.push_back(new RodConstraint(pVector[1], pVector[2], 1, 2, 2, dist));
+    // Get list sizes
+    m = constraints.size();
+    n = pVector.size();
+    printf("init: n=%i m=%i\n", n, m);
 
 	J = new implicitMatrixWithTrans(constraints.size(), pVector.size() * 2);
 	Jdot = new implicitMatrixWithTrans(constraints.size(), pVector.size() * 2);
@@ -194,10 +188,7 @@ static void init_system(void)
 			Jdot->blocks.push_back(mb);
 		}
 	}
-	m = constraints.size();
-	n = pVector.size();
-	
-	printf("init: n=%i m=%i\n", n, m);
+
 	printf("init: |J blocks| = %i\n", J->blocks.size());
 
 	// Definitely know how many particles there are going to be
@@ -266,6 +257,10 @@ static void draw_forces ( void )
 	for (Force* f : forces){
 		f->draw();
 	}
+
+    for (Force* f : mouseForces){
+        f->draw();
+    }
 }
 
 static void draw_constraints ( void )
@@ -362,6 +357,19 @@ static void key_func ( unsigned char key, int x, int y )
     case 'b':
         show_force = !show_force;
         break;
+
+    case '1':
+        scene_int = 1;
+        init_system();
+        break;
+    case '2':
+        scene_int = 2;
+        init_system();
+        break;
+    case '3':
+        scene_int = 3;
+        init_system();
+        break;
     }
 }
 
@@ -391,21 +399,6 @@ static void reshape_func ( int width, int height )
 	win_y = height;
 }
 
-bool check_bit(int number, int pos)
-{
-    return (number >> pos) & 1U;
-}
-
-void set_bit(int& number, int pos)
-{
-    number |= 1UL << pos;
-}
-
-void clear_bit(int& number, int pos)
-{
-    number &= ~(1UL << pos);
-}
-
 static void mouse_interact ()
 {
     if (mouse_down[0]) {
@@ -424,33 +417,27 @@ static void mouse_interact ()
         o_r = o_r * 2 - 1;
         mouseParticle->m_Velocity = Vec2(q - o_q, r - o_r);
 
-        // Don't add more particles if we are already dragging one
-        if (was_selected > 0) return;
+        // Don't add more particles if we are already dragging one or more
+        if (particle_selected) return;
 
         // Bounding box of the selectable particles
         const float h = 0.03;
         Vec2 min = {q - h, r - h};
         Vec2 max = {q + h, r + h};
 
-        int idx = 0;
         for (Particle* p : pVector) {
-            if (!check_bit(was_selected, idx) && is_inside_bbox(p->m_Position, min, max)) {
+            if (is_inside_bbox(p->m_Position, min, max)) {
                 float dist = sqrt(pow(mouseParticle->m_Position[0] - p->m_Position[0], 2) + pow(mouseParticle->m_Position[1] - p->m_Position[1], 2));
-                forces.push_back(new SpringForce(p, mouseParticle, dist, 50.0, 0.2));
-                set_bit(was_selected, idx);
+                mouseForces.push_back(new SpringForce(p, mouseParticle, dist, 50.0, 0.2));
+                particle_selected = true;
             }
-            idx++;
         }
     }
 
-    // Remove all mouse spring forces from the list
-    if (!mouse_down[0] && was_selected > 0) {
-        int idx = 0;
-        while (was_selected > 0) {
-            if (check_bit(was_selected, idx)) forces.pop_back();
-            clear_bit(was_selected, idx);
-            idx++;
-        }
+    // Remove all mouse spring forces
+    if (!mouse_down[0] && particle_selected) {
+        mouseForces.clear();
+        particle_selected = false;
     }
 }
 
@@ -550,6 +537,7 @@ static void idle_func ( void )
 		
 		for (Particle* p : pVector) p->m_ForceAccum = Vec2(0, 0); // Clear forces
 		for (Force *f : forces) f->calculate_forces(); // Calculate all forces
+		for (Force *f : mouseForces) f->calculate_forces(); // Calculate all forces
 		//Constraint handling
 		for (Constraint *c : constraints){
 			c->eval_J();
@@ -670,6 +658,7 @@ int main ( int argc, char ** argv )
 
 	printf ( "\t Show the velocities with the 'v' key\n" );
 	printf ( "\t Show the forces with the 'b' key\n" );
+	printf ( "\t Switch scenes using the numpad\n" );
 
 	dsim = 0;
 	dump_frames = 0;
