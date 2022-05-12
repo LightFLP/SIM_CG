@@ -35,8 +35,6 @@ double CircularWireConstraint::eval_C(){
 // (x - c)^2 + (y - c)^2 -> 2(x-c)*x' + 2(y-c)*y'
 double CircularWireConstraint::eval_Cdot(){
 	return 2*(pVector[0]->m_Position - m_center)*pVector[0]->m_Velocity;
-	// return 2*(pVector[0]->m_Position[0]-m_center[0])*pVector[0]->m_Velocity[0] +
-	//        2*(pVector[0]->m_Position[1]-m_center[1])*pVector[0]->m_Velocity[1];
 }
 
 

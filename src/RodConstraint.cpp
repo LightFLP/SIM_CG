@@ -30,8 +30,7 @@ double RodConstraint::eval_C(){
 double RodConstraint::eval_Cdot(){
 	Particle* p1 = pVector[0];
   Particle* p2 = pVector[1];
-  return 2*((p1->m_Velocity[0] - p2->m_Velocity[0])*(p1->m_Position[0] - p2->m_Position[0]) + 
-            (p1->m_Velocity[1] - p2->m_Velocity[1])*(p1->m_Position[1] - p2->m_Position[1]) );
+  return (p1->m_Velocity - p2->m_Velocity) * (p1->m_Velocity - p2->m_Velocity);
 }
 
 void RodConstraint::eval_J(){

@@ -8,7 +8,7 @@
 #include "RodConstraint.h"
 #include "CircularWireConstraint.h"
 #include "imageio.h"
-#include "EulerSolver.h"
+#include "EulerSolvers.h"
 #include "ConstantForce.h"
 #include "RK4Solver.h"
 #include "DragForce"
@@ -21,7 +21,7 @@
 
 /* macros */
 
-Solver* solver = new RK4Solver();
+Solver* solver = new SympleticEulerSolver();
 std::vector<Force*> forces = std::vector<Force*>();
 std::vector<Constraint*> constraints = std::vector<Constraint*>();
 
@@ -100,9 +100,12 @@ static double* global_C;
 static double* global_Cdot;
 
 // RHS for solving the constraints
-static double* global_RHS; //RHS = -Jdot*qdot - JQ - ks*C -kd*Cdot.
-static double  ks =     0; //stiffness for the RHS
-static double  kd =     0; //damping   for the RHS
+static double* global_RHS; //RHS = -Jdot*qdot - JQ - magic_alpha*C -magic_beta*Cdot.
+static double  magic_alpha = 0; //stiffness for the RHS
+static double  magic_beta =  0; //damping   for the RHS
+
+// we use previous iteration lambda for warm start
+double* lambda;
 
 static implicitMatrixWithTrans* J;
 static implicitMatrixWithTrans* Jdot;
@@ -157,7 +160,7 @@ static void init_system(void)
 	// pVector.push_back(new Particle(center + offset + offset + offset + offset));
 	
 	forces.push_back(new ConstantForce(Vec2(0, -9.81))); // Graivty
-	forces.push_back(new DragForce(0.05)); // drag
+	forces.push_back(new DragForce(0.001)); // drag
 
 	bool skip = false;
 	for (Particle* p : pVector){
@@ -170,11 +173,11 @@ static void init_system(void)
 	}
 
 
-	forces.push_back(new SpringForce(pVector[0], pVector[1], dist, 500.0, 0.2));
+	forces.push_back(new SpringForce(pVector[0], pVector[1], dist, 5000.0, 0.2));
 	
-	constraints.push_back(new CircularWireConstraint(pVector[0], 0, 0, Vec2(0, 0), dist));
-	constraints.push_back(new CircularWireConstraint(pVector[1], 1, 1, 3*offset, dist));
-	constraints.push_back(new RodConstraint(pVector[1], pVector[2], 1, 2, 2, dist));
+	constraints.push_back(new CircularWireConstraint(pVector[0], 0, 0, Vec2(0,0), dist));
+	//constraints.push_back(new CircularWireConstraint(pVector[1], 1, 1, 3*offset, dist));
+	constraints.push_back(new RodConstraint(pVector[1], pVector[2], 1, 2, 1, dist));
 
 	J = new implicitMatrixWithTrans(constraints.size(), pVector.size() * 2);
 	Jdot = new implicitMatrixWithTrans(constraints.size(), pVector.size() * 2);
@@ -208,6 +211,8 @@ static void init_system(void)
 	global_RHS = (double*) malloc(sizeof(double) * m);
 	global_C = (double*) malloc(sizeof(double) * m);
 	global_Cdot = (double*) malloc(sizeof(double) * m);
+
+	lambda = (double*) malloc(sizeof(double) * m);
 }
 
 /*
@@ -436,7 +441,7 @@ static void mouse_interact ()
         for (Particle* p : pVector) {
             if (!check_bit(was_selected, idx) && is_inside_bbox(p->m_Position, min, max)) {
                 float dist = sqrt(pow(mouseParticle->m_Position[0] - p->m_Position[0], 2) + pow(mouseParticle->m_Position[1] - p->m_Position[1], 2));
-                forces.push_back(new SpringForce(p, mouseParticle, dist, 50.0, 0.2));
+                forces.push_back(new SpringForce(p, mouseParticle, dist, 500, 0.2));
                 set_bit(was_selected, idx);
             }
             idx++;
@@ -515,14 +520,14 @@ static void populate_globals(){
 	}
 
 	// ksC = C
-	// ksC *= ks
+	// ksC *= magic_alpha
 	vecAssign(m, ksC, global_C);
-	vecTimesScalar(m, ksC, ks);
+	vecTimesScalar(m, ksC, magic_alpha);
 
 	// kdC = Cdot
-	// kdC *= kd
+	// kdC *= magic_beta
 	vecAssign(m, kdC, global_Cdot);
-	vecTimesScalar(m, kdC, kd);
+	vecTimesScalar(m, kdC, magic_beta);
 
 	//Assemble RHS
 	
@@ -556,26 +561,17 @@ static void idle_func ( void )
 			c->eval_Jdot();
 		}
 		populate_globals();
-		
-		double* lambda = (double*) malloc(sizeof(double) * m);
-
-
 
 		int steps = 0;
 
 
 		ConjGrad(m, JWJt, lambda, global_RHS, 1e-32, &steps);
 
-		// printf("\n< lambda>\n");
-		// for (int i = 0; i < m; i++){
-		// 	printf(" lambda[%i] = %.3f", i, lambda[i]);
-		// }
-		// printf("\n</lambda>\n");
+		//printf("steps: %i\n", steps);
+
 		double* Qhat = (double*) malloc(sizeof(double) * 2 * n);
 		J->matTransVecMult(lambda, Qhat);
-		// for (int i = 0; i < n; i++){
-		// 	printf("Qhat[%i] = (%.3f, %.3f)\n", i, Qhat[2*i], Qhat[2*i+1]);
-		// }
+
 		Particle* p;
 		for (int i = 0; i < n; i++){
 			p = pVector[i];
@@ -653,7 +649,7 @@ int main ( int argc, char ** argv )
 
 	if ( argc == 1 ) {
 		N = 64;
-		dt = 1e-4f;
+		dt = 1e-3f;
 		d = 5.f;
 		fprintf ( stderr, "Using defaults : N=%d dt=%g d=%g\n",
 			N, dt, d );
