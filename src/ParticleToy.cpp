@@ -8,6 +8,8 @@
 #include "EulerSolvers.h"
 #include "RK4Solver.h"
 #include "Scene.h"
+#include "Force.h"
+#include "Constraint.h"
 
 #include <vector>
 #include <stdlib.h>
@@ -202,6 +204,8 @@ static void init_system(void)
 	global_RHS = (double*) malloc(sizeof(double) * m);
 	global_C = (double*) malloc(sizeof(double) * m);
 	global_Cdot = (double*) malloc(sizeof(double) * m);
+
+    lambda = (double*) malloc(sizeof(double) * m);
 }
 
 /*
