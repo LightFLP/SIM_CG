@@ -51,7 +51,7 @@ double ConjGrad(int n, implicitMatrix *A, double x[], double b[],
   double *t = (double *) malloc(sizeof(double) * n);
   double *temp = (double *) malloc(sizeof(double) * n);
 
-  vecAssign(n, x, b); // x = b;
+  //vecAssign(n, x, b); // x = b; -> populate x in advance for warm start, we use previous iteration lambda
 
   vecAssign(n, r, b); // r = b;
   A->matVecMult(x, temp); // temp = A*x;
