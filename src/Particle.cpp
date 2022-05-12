@@ -1,7 +1,8 @@
 #include "Particle.h"
 #include <GL/glut.h>
 
-#define VIS_MULT 0.01
+#define VIS_MULT_VEL 0.1
+#define VIS_MULT_FOR 0.01
 
 Particle::Particle(const Vec2 & ConstructPos) :
 	m_ConstructPos(ConstructPos), m_Position(Vec2(0.0, 0.0)), m_Velocity(Vec2(0.0, 0.0))
@@ -25,7 +26,7 @@ void Particle::draw(bool show_velocity, bool show_force)
         glColor3f(1.f, 0.f, 0.f);
         glBegin(GL_LINES);
         glVertex2f(m_Position[0], m_Position[1]);
-        glVertex2f(m_Position[0] + m_Velocity[0] * VIS_MULT, m_Position[1] + m_Velocity[1] * VIS_MULT);
+        glVertex2f(m_Position[0] + m_Velocity[0] * VIS_MULT_VEL, m_Position[1] + m_Velocity[1] * VIS_MULT_VEL);
         glEnd();
     }
 
@@ -33,7 +34,7 @@ void Particle::draw(bool show_velocity, bool show_force)
         glColor3f(0.f, 0.f, 1.f);
         glBegin(GL_LINES);
         glVertex2f(m_Position[0], m_Position[1]);
-        glVertex2f(m_Position[0] + m_ForceAccum[0] / m_Mass * VIS_MULT, m_Position[1] + m_ForceAccum[1] / m_Mass * VIS_MULT);
+        glVertex2f(m_Position[0] + m_ForceAccum[0] / m_Mass * VIS_MULT_FOR, m_Position[1] + m_ForceAccum[1] / m_Mass * VIS_MULT_FOR);
         glEnd();
     }
 
