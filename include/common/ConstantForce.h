@@ -9,7 +9,7 @@ class ConstantForce : public Force{
         
         virtual void calculate_forces(){
             for (Particle* p : pVector){
-                p->m_ForceAccum += m_constant;
+                p->m_ForceAccum += m_constant*p->m_Mass;
             }
         }
 };
