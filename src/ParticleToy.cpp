@@ -14,6 +14,8 @@
 #include <vector>
 #include <stdlib.h>
 #include <stdio.h>
+#include <iostream>
+#include <fstream>
 #include <GL/glut.h>
 
 
@@ -31,6 +33,13 @@ static double dt, d;
 static int dsim;
 static int dump_frames;
 static int frame_number;
+static int n_frames;
+static int last_time;
+static int dt_since_start;
+static float fps = 0.0f;
+
+static int filesystem_opened;
+static std::ofstream frametime_file;
 
 // static Particle *pList;
 static std::vector<Particle*> pVector;
@@ -210,8 +219,24 @@ static void pre_display ( void )
 
 static void post_display ( void )
 {
+    // FPS
+    int current_time = glutGet(GLUT_ELAPSED_TIME);
+    if ( (current_time / 1000.0) - last_time >= 1.0 ){
+        fps = 1000.0/double(n_frames);
+        n_frames = 0;
+        last_time += 1.0;
+    }
+
+    char* buff = (char*) malloc(sizeof(char) * 30);
+    sprintf(buff, "Particletoys! - dts: %d - fps: %f", dt_since_start, fps);
+    glutSetWindowTitle(buff);
+
 	// Write frames if necessary.
 	if (dump_frames) {
+
+        // Write fps to file
+        frametime_file << fps << "\n";
+
 		const int FRAME_INTERVAL = 4;
 		if ((frame_number % FRAME_INTERVAL) == 0) {
 			const unsigned int w = glutGet(GLUT_WINDOW_WIDTH);
@@ -229,7 +254,8 @@ static void post_display ( void )
 			free(buffer);
 		}
 	}
-	frame_number++;
+    frame_number++;
+    n_frames++;
 	
 	glutSwapBuffers ();
 }
@@ -328,6 +354,16 @@ static void key_func ( unsigned char key, int x, int y )
 	case 'd':
 	case 'D':
 		dump_frames = !dump_frames;
+        if (dump_frames) {
+            printf("open");
+            filesystem_opened++;
+            static char filename[80];
+            sprintf(filename, "frame_times_%.5i.txt", filesystem_opened);
+            frametime_file.open(filename);
+        } else {
+            printf("close");
+            frametime_file.close();
+        }
 		break;
 
 	case 'q':
@@ -338,7 +374,10 @@ static void key_func ( unsigned char key, int x, int y )
 
 	case ' ':
 		dsim = !dsim;
-		if (dsim) for (Particle *p : pVector) p->reset();
+		if (dsim) {
+            for (Particle *p : pVector) p->reset();
+            dt_since_start = 0;
+        }
 		break;
 
     case 'v':
@@ -525,7 +564,6 @@ static void populate_globals(){
 static void idle_func ( void )
 {
 	if ( dsim ){
-		
 		for (Particle* p : pVector) p->m_ForceAccum = Vec2(0, 0); // Clear forces
 		for (Force *f : forces) f->calculate_forces(); // Calculate all forces
 		for (Force *f : mouseForces) f->calculate_forces(); // Calculate all forces
@@ -556,6 +594,7 @@ static void idle_func ( void )
 		solver->simulation_step( pVector, dt );
 
         mouse_interact();
+        dt_since_start++;
 	}else{
 		get_from_UI();
 		remap_GUI();
