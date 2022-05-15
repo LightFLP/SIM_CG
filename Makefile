@@ -1,7 +1,9 @@
+rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d)) # Recursive wildcard
+
+
 INC_WINDOWS = ./include/windows
 INC_LINUX   = include/linux
-INC_COMMON  = include/common
-
+INC_COMMON  = $(patsubst %,-I%, $(sort $(dir $(call rwildcard, ./include/common, *.h))))
 
 ifeq ($(OS),Windows_NT)
 	RM = rm -vf # might have to be adjusted to del for some Windows distros
@@ -13,15 +15,16 @@ else
 	CXX_EXTRA_FLAGS = -lglut -lGLU -lGL -lpng
 endif
 
-CXXFLAGS = -g -O2 -Wall -Wno-sign-compare -I$(INCLUDE) -I$(INC_COMMON) -DHAVE_CONFIG_H 
+CXXFLAGS = -g -Wall -Wno-sign-compare -I$(INCLUDE) $(INC_COMMON) -DHAVE_CONFIG_H 
 CXX = g++
 
 SRC_DIR = src
-OBJ_DIR = obj
 BIN_DIR = bin
 
-SOURCES = $(wildcard $(SRC_DIR)/*cpp)
-OBJECTS = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(notdir $(SOURCES)))
+SOURCES = $(call rwildcard,$(SRC_DIR),*.cpp)
+
+OBJ_DIR = $(patsubst src/%, obj/%,$(sort $(dir $(SOURCES))))
+OBJECTS = $(patsubst src/%.cpp, obj/%.o, $(SOURCES))
 EXECUTABLE = $(BIN_DIR)/project1.exe
 
 all: $(OBJ_DIR) $(BIN_DIR) $(EXECUTABLE)
@@ -32,6 +35,7 @@ $(OBJ_DIR):
 $(BIN_DIR):
 	mkdir -v $@
 
+
 obj/%.o: $(SRC_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -o $@ -c $<
 
@@ -39,5 +43,5 @@ $(EXECUTABLE): $(OBJECTS)
 	$(CXX) -o $@ $^ $(CXX_EXTRA_FLAGS)
 
 clean:
-	@$(RM) $(OBJ_DIR)/*
+	@$(RM) $(foreach DIR, $(OBJ_DIR), $(filter %.o, $(wildcard $(DIR)*.o)))
 	@$(RM) $(BIN_DIR)/*exe

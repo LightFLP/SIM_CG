@@ -18,5 +18,5 @@ public:
 	Vec2 m_Velocity;
 	
 	Vec2 m_ForceAccum;
-	float m_Mass = 1;
+	float m_Mass = 0.01;
 };

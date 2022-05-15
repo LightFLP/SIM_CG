@@ -4,16 +4,17 @@
 
 #include "Particle.h"
 
-#include "Force.h"
-#include "ConstantForce.h"
-#include "DragForce.h"
-#include "SpringForce.h"
+#include "Forces/Force.h"
+#include "Forces/ConstantForce.h"
+#include "Forces/DragForce.h"
+#include "Forces/SpringForce.h"
+#include "Forces/MouseSpringForce.h"
 
-#include "Constraint.h"
-#include "CircularWireConstraint.h"
-#include "RodConstraint.h"
-#include "StaticConstraint.h"
-#include "WireConstraint.h"
+#include "Constraints/Constraint.h"
+#include "Constraints/CircularWireConstraint.h"
+#include "Constraints/RodConstraint.h"
+#include "Constraints/StaticConstraint.h"
+#include "Constraints/WireConstraint.h"
 
 class Scene {
 public:

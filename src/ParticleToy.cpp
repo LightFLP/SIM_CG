@@ -1,6 +1,7 @@
 // ParticleToy.cpp : Defines the entry point for the console application.
 //
-
+// #define DEBUG
+// #define STEP
 #include <gfx/geom3d.h>
 
 #include "Particle.h"
@@ -10,6 +11,7 @@
 #include "Scene.h"
 #include "Force.h"
 #include "Constraint.h"
+
 
 #include <vector>
 #include <stdlib.h>
@@ -35,13 +37,14 @@ static int dump_frames;
 static int frame_number;
 static int n_frames;
 static int last_time;
-static int dt_since_start;
+static int dt_since_start = 0;
 static float fps = 0.0f;
 
 static int filesystem_opened;
 static std::ofstream frametime_file;
 
-// static Particle *pList;
+static State* state;
+
 static std::vector<Particle*> pVector;
 static Particle* mouseParticle;
 static int particle_selected = false;
@@ -80,30 +83,6 @@ static void clear_data ( void )
 	}
 }
 
-// \emph{q} positions
-static double* global_q;
-
-// \emph{\dot{q}} velocities
-static double* global_qdot;
-
-// \emph{Q} forces
-static double* global_forces;
-
-static double* global_C;
-static double* global_Cdot;
-
-// RHS for solving the constraints
-static double* global_RHS; //RHS = -Jdot*qdot - JQ - magic_alpha*C -magic_beta*Cdot.
-static double  magic_alpha = 0; //stiffness for the RHS
-static double  magic_beta =  0; //damping   for the RHS
-
-// we use previous iteration lambda for warm start
-double* lambda;
-
-static implicitMatrixWithTrans* J;
-static implicitMatrixWithTrans* Jdot;
-static implicitJWJt* JWJt;
-
 // number of constraints
 static int m;
 // number of particles
@@ -112,35 +91,11 @@ static int n;
 
 static void init_system(void)
 {
-#if DEBUG
-	implicitMatrixWithTrans* test = new implicitMatrixWithTrans(3, 3);
-	double* test_vec = (double*) malloc(sizeof(double) * 3);
-	test_vec[0] = 1;
-	test_vec[1] = 1;
-	test_vec[2] = 1;
-	MatrixBlock* mb = new MatrixBlock(0, 1, 2, 2);
-	mb->data[0] = 2;
-	mb->data[1] = 1;
-	mb->data[2] = 2;
-	mb->data[3] = 0;
+#ifdef DEBUG
 	
-
-
-	test->blocks.push_back(mb);
-
-	double* test_output = (double*) malloc(sizeof(double) * 3);
-	test->matVecMult(test_vec, test_output);
-	for (int i = 0; i < 3; i++){
-		printf("%i: %f\n", i, test_output[i]);
-	}
-	test->matTransVecMult(test_vec, test_output);
-	for (int i = 0; i < 3; i++){
-		printf("%i: %f\n", i, test_output[i]);
-	}
-	exit(0);
 #endif
     // Make sure the simulation is paused
-    dsim = false;
+    dsim = true;
 
     // Clear all lists
     pVector.clear();
@@ -162,43 +117,12 @@ static void init_system(void)
         default:
             Scene::loadDefault(pVector, forces, constraints);
     }
-
+	for (Particle* p : pVector) p->reset();
     // Get list sizes
     m = constraints.size();
     n = pVector.size();
     printf("init: n=%i m=%i\n", n, m);
-
-	J = new implicitMatrixWithTrans(constraints.size(), pVector.size() * 2);
-	Jdot = new implicitMatrixWithTrans(constraints.size(), pVector.size() * 2);
-	JWJt = new implicitJWJt(J);
-	JWJt->W = (double*) malloc(sizeof(double) * pVector.size() * 2);
-	for (int i = 0; i < pVector.size(); i++){
-		JWJt->W[2*i+0] = 1/pVector[i]->m_Mass;
-		JWJt->W[2*i+1] = 1/pVector[i]->m_Mass;
-	}
-
-	for (Constraint *c : constraints){
-		// we need to register the corresponding matrix blocks with the linear solver
-		for (MatrixBlock* mb : c->matrix_blocks_J){
-			J->blocks.push_back(mb);
-		}
-		for (MatrixBlock* mb : c->matrix_blocks_Jdot){
-			Jdot->blocks.push_back(mb);
-		}
-	}
-
-	printf("init: |J blocks| = %i\n", J->blocks.size());
-
-	// Definitely know how many particles there are going to be
-	global_q = (double*) malloc(sizeof(double) * n * 2);
-	global_qdot = (double*) malloc(sizeof(double) * n * 2);
-	global_forces = (double*) malloc(sizeof(double) * n * 2);
-
-	global_RHS = (double*) malloc(sizeof(double) * m);
-	global_C = (double*) malloc(sizeof(double) * m);
-	global_Cdot = (double*) malloc(sizeof(double) * m);
-
-    lambda = (double*) malloc(sizeof(double) * m);
+	state = new State(solver, n, m, pVector);
 }
 
 /*
@@ -222,15 +146,15 @@ static void post_display ( void )
     // FPS
     int current_time = glutGet(GLUT_ELAPSED_TIME);
     if ( (current_time / 1000.0) - last_time >= 1.0 ){
-        fps = 1000.0/double(n_frames);
+        fps = n_frames/(current_time/1000.0 - last_time);
         n_frames = 0;
         last_time += 1.0;
     }
 
-    char* buff = (char*) malloc(sizeof(char) * 30);
-    sprintf(buff, "Particletoys! - dts: %d - fps: %f", dt_since_start, fps);
+    char* buff = (char*) malloc(sizeof(char) * 1024);
+    sprintf(buff, "Particletoys! - t: %.3f - fps: %.1f", dt_since_start*dt, fps);
     glutSetWindowTitle(buff);
-
+	free(buff);
 	// Write frames if necessary.
 	if (dump_frames) {
 
@@ -374,10 +298,14 @@ static void key_func ( unsigned char key, int x, int y )
 
 	case ' ':
 		dsim = !dsim;
+#ifndef DEBUG
 		if (dsim) {
             for (Particle *p : pVector) p->reset();
             dt_since_start = 0;
+			state->reset(pVector);
+			for (Constraint* c : constraints) c->eval_C(state->globals);
         }
+#endif
 		break;
 
     case 'v':
@@ -454,13 +382,14 @@ static void mouse_interact ()
         const float h = 0.03;
         Vec2 min = {q - h, r - h};
         Vec2 max = {q + h, r + h};
-
+		int i = 0;
         for (Particle* p : pVector) {
             if (is_inside_bbox(p->m_Position, min, max)) {
                 float dist = sqrt(pow(mouseParticle->m_Position[0] - p->m_Position[0], 2) + pow(mouseParticle->m_Position[1] - p->m_Position[1], 2));
-                mouseForces.push_back(new SpringForce(p, mouseParticle, dist, 50.0, 0.2));
+                mouseForces.push_back(new MouseSpringForce(i, mouseParticle, dist, 50.0, 0.2));
                 particle_selected = true;
             }
+			i++;
         }
     }
 
@@ -471,130 +400,21 @@ static void mouse_interact ()
     }
 }
 
-static bool populate_globals_verbose = false;
-static void populate_globals(){
-	Particle* p;
-	for (int i = 0; i < n; i++){
-		p = pVector[i];
-
-		global_q[2*i  ] = p->m_Position[0];
-		global_q[2*i+1] = p->m_Position[1];
-
-		global_qdot[2*i  ] = p->m_Velocity[0];
-		global_qdot[2*i+1] = p->m_Velocity[1];
-
-		//Since Q only used in JWQ, we can smuggle W in there as well
-		global_forces[2*i  ] = p->m_ForceAccum[0]/p->m_Mass;
-		global_forces[2*i+1] = p->m_ForceAccum[1]/p->m_Mass;
-	}
-
-	Constraint* c;
-	std::memset(global_C, 0.0, m);
-	std::memset(global_Cdot, 0.0, m);
-	for (int i = 0; i < m; i++){
-		c = constraints[i];
-		global_C[i] += c->eval_C();
-		global_Cdot[i] += c->eval_Cdot();
-		if (populate_globals_verbose) printf("C[%i] = %.3f C.[%i] = %.3f\n", i, global_C[i], i, global_Cdot[i]);
-	}
-
-
-	// setup global_RHS
-	double*  Jq = (double*) malloc(sizeof(double) * m);
-	double* JWQ = (double*) malloc(sizeof(double) * m);
-	double* ksC = (double*) malloc(sizeof(double) * m);
-	double* kdC = (double*) malloc(sizeof(double) * m);
-
-	// Jq = Jdot * qdot
-	if (populate_globals_verbose) {
-		printf("\n< Jq <- Jdot*qdot>\n");
-		printf("\nglobal_qdot:\n");
-		for (int i = 0; i < n; i++){
-			printf(" q.[%i] = (%.3f, %.3f)\n", i, global_qdot[2*i], global_qdot[2*i+1]);
-		}
-		printf("\n</Jq <- Jdot*qdot>\n");
-	}
-	Jdot->matVecMult(global_qdot, Jq, populate_globals_verbose);
-
-	J->matVecMult(global_forces, JWQ, populate_globals_verbose);
-	// JWQ = J * (W*Q)
-	if (populate_globals_verbose) {
-		printf("\n< JWQ <- J*WQ>\n");
-		printf("\nglobal_forces:\n");
-		for (int i = 0; i < n; i++){
-			printf(" WQ[%i] = (%.3f, %.3f)\n", i, global_forces[2*i], global_forces[2*i+1]);
-		}
-		printf("\nresult:\n");
-		for (int i = 0; i < m; i++){
-			printf("JWQ[%i] = %.3f\n", i, JWQ[i]);
-		}
-		printf("\n</JWQ <- J*WQ>\n");
-	}
-
-	// ksC = C
-	// ksC *= magic_alpha
-	vecAssign(m, ksC, global_C);
-	vecTimesScalar(m, ksC, magic_alpha);
-
-	// kdC = Cdot
-	// kdC *= magic_beta
-	vecAssign(m, kdC, global_Cdot);
-	vecTimesScalar(m, kdC, magic_beta);
-
-	//Assemble RHS
-	
-	memset(global_RHS, 0.0, sizeof(double) * m);
-
-	vecDiffEqual(m, global_RHS, Jq); // RHS = -Jq
-	vecDiffEqual(m, global_RHS, JWQ); // RHS = -Jq - JWQ
-	vecDiffEqual(m, global_RHS, ksC); // RHS = -Jq - JWQ - ksC
-	vecDiffEqual(m, global_RHS, kdC); // RHS = -JQ - JWQ - ksC - kdC
-	// vecTimesScalar(m, global_RHS, -1); //RHS = -Jq - JWQ - ksC - kdC
-
-	if (populate_globals_verbose) {
-		printf("\n< global_RHS>\n");
-		for(int i = 0; i < m; i++){
-			printf(" b[%i] = %.3f\n", i, global_RHS[i]);
-		}
-		printf("</global_RHS>\n");
-	}
-
-}
-
 static void idle_func ( void )
 {
 	if ( dsim ){
-		for (Particle* p : pVector) p->m_ForceAccum = Vec2(0, 0); // Clear forces
-		for (Force *f : forces) f->calculate_forces(); // Calculate all forces
-		for (Force *f : mouseForces) f->calculate_forces(); // Calculate all forces
-		//Constraint handling
-		for (Constraint *c : constraints){
-			c->eval_J();
-			c->eval_Jdot();
+		for (int i = 0; i < N; i++){
+			dt_since_start++;
+#ifdef DEBUG
+			printf("Iteration %i\n", i);
+#endif
+			state->advance(dt, pVector, constraints, forces, mouseForces);
 		}
-		populate_globals();
-
-		int steps = 0;
-
-
-		ConjGrad(m, JWJt, lambda, global_RHS, 1e-32, &steps);
-
-		//printf("steps: %i\n", steps);
-
-		double* Qhat = (double*) malloc(sizeof(double) * 2 * n);
-		J->matTransVecMult(lambda, Qhat);
-
-		Particle* p;
-		for (int i = 0; i < n; i++){
-			p = pVector[i];
-			p->m_ForceAccum[0] += Qhat[2*i];
-			p->m_ForceAccum[1] += Qhat[2*i+1];
-		}
-
-		solver->simulation_step( pVector, dt );
-
-        mouse_interact();
-        dt_since_start++;
+		state->copy_to_particles(pVector);
+#ifdef STEP
+		dsim = false;
+#endif
+        // mouse_interact();
 	}else{
 		get_from_UI();
 		remap_GUI();
@@ -661,8 +481,9 @@ int main ( int argc, char ** argv )
 	glutInit ( &argc, argv );
 
 	if ( argc == 1 ) {
-		N = 64;
-		dt = 1e-2f;
+		// 144 * N * dt = 1
+		N = 1000;
+		dt = 1/(144.0*N);
 		d = 5.f;
 		fprintf ( stderr, "Using defaults : N=%d dt=%g d=%g\n",
 			N, dt, d );
