@@ -1,9 +1,6 @@
 #pragma once
 
-#include "Particle.h"
 #include "Constraint.h"
-#include "linearSolver.h"
-#include "Simulator.h"
 
 class CircularWireConstraint : public Constraint {
  public:

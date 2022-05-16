@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Particle.h"
-#include <Constraints/Constraint.h>
+#include <Constraint.h>
 
 class RodConstraint : public Constraint {
  public:

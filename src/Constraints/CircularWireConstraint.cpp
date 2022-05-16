@@ -43,7 +43,7 @@ double CircularWireConstraint::eval_Cdot(GlobalVars* globals){
 }
 
 void CircularWireConstraint::eval_J(GlobalVars* globals, std::vector<MatrixBlock> & blocks){
-	Vec2 pos = Vec2(globals->x[iVector[0]*2], globals->x[iVector[0]*2 + 1]);
+	Vec2 pos = globals->get_pos(iVector[0]);
 	MatrixBlock mb = MatrixBlock(m_c_index, iVector[0]*2, 1, 2);
 	mb.data[0] = 2*(pos[0]-m_center[0]);
 	mb.data[1] = 2*(pos[1]-m_center[1]);
@@ -52,7 +52,7 @@ void CircularWireConstraint::eval_J(GlobalVars* globals, std::vector<MatrixBlock
 
 // Jdot = Cdot/dq
 void CircularWireConstraint::eval_Jdot(GlobalVars* globals, std::vector<MatrixBlock> & blocks){
-	Vec2 vel = Vec2(globals->v[iVector[0]*2], globals->v[iVector[0]*2 + 1]);
+	Vec2 vel = globals->get_vel(iVector[0]);
 	MatrixBlock mb = MatrixBlock(m_c_index, iVector[0]*2, 1, 2);
 	mb.data[0] = 2*vel[0];
 	mb.data[1] = 2*vel[1];

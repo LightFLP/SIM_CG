@@ -11,7 +11,7 @@
 #include "Scene.h"
 #include "Force.h"
 #include "Constraint.h"
-
+#include "Simulator.h"
 
 #include <vector>
 #include <stdlib.h>
@@ -25,7 +25,7 @@
 
 Solver* solver = new SympleticEulerSolver();
 std::vector<Force*> forces = std::vector<Force*>();
-std::vector<Force*> mouseForces = std::vector<Force*>();
+std::vector<Force*> mouse_forces = std::vector<Force*>();
 std::vector<Constraint*> constraints = std::vector<Constraint*>();
 
 /* global variables */
@@ -46,7 +46,7 @@ static std::ofstream frametime_file;
 static State* state;
 
 static std::vector<Particle*> pVector;
-static Particle* mouseParticle;
+static Particle* mouse_particle;
 static int particle_selected = false;
 static int scene_int = 1;
 
@@ -100,7 +100,7 @@ static void init_system(void)
     // Clear all lists
     pVector.clear();
     forces.clear();
-    mouseForces.clear();
+    mouse_forces.clear();
     constraints.clear();
 
     // Load new scene
@@ -112,7 +112,10 @@ static void init_system(void)
             Scene::loadDoubleCircle(pVector, forces, constraints);
             break;
         case 3:
-            Scene::loadCloth(pVector, forces, constraints);
+            Scene::loadClothStatic(pVector, forces, constraints);
+            break;
+        case 4:
+            Scene::loadClothWire(pVector, forces, constraints);
             break;
         default:
             Scene::loadDefault(pVector, forces, constraints);
@@ -199,7 +202,7 @@ static void draw_forces ( void )
 		f->draw();
 	}
 
-    for (Force* f : mouseForces){
+    for (Force* f : mouse_forces){
         f->draw();
     }
 }
@@ -250,16 +253,6 @@ static void get_from_UI ()
 	omy = my;
 }
 
-static void remap_GUI()
-{
-	int ii, size = pVector.size();
-	for(ii=0; ii<size; ii++)
-	{
-		pVector[ii]->m_Position[0] = pVector[ii]->m_ConstructPos[0];
-		pVector[ii]->m_Position[1] = pVector[ii]->m_ConstructPos[1];
-	}
-}
-
 /*
 ----------------------------------------------------------------------
 GLUT callback routines
@@ -268,66 +261,70 @@ GLUT callback routines
 
 static void key_func ( unsigned char key, int x, int y )
 {
-	switch ( key )
-	{
-	case 'c':
-	case 'C':
-		clear_data ();
-		break;
+    switch ( key ) {
 
-	case 'd':
-	case 'D':
-		dump_frames = !dump_frames;
-        if (dump_frames) {
-            printf("open");
-            filesystem_opened++;
-            static char filename[80];
-            sprintf(filename, "frame_times_%.5i.txt", filesystem_opened);
-            frametime_file.open(filename);
-        } else {
-            printf("close");
-            frametime_file.close();
-        }
-		break;
+        // Dump screen and frame times
+        case 'd':
+        case 'D':
+            dump_frames = !dump_frames;
+            if (dump_frames) {
+                filesystem_opened++;
+                static char filename[80];
+                sprintf(filename, "frame_times_%.5i.txt", filesystem_opened);
+                frametime_file.open(filename);
+            } else {
+                frametime_file.close();
+            }
+            break;
 
-	case 'q':
-	case 'Q':
-		free_data ();
-		exit ( 0 );
-		break;
-
-	case ' ':
-		dsim = !dsim;
-#ifndef DEBUG
-		if (dsim) {
+        // Reset simulation
+        case 'r':
+        case 'R':
+            dsim = false;
             for (Particle *p : pVector) p->reset();
             dt_since_start = 0;
-			state->reset(pVector);
-			for (Constraint* c : constraints) c->eval_C(state->globals);
-        }
-#endif
-		break;
+            state->reset(pVector);
+            for (Constraint* c : constraints) c->eval_C(state->globals);
+            for (Force* f : forces) f->calculate_forces(state->globals);
+            break;
 
-    case 'v':
-        show_velocity = !show_velocity;
-        break;
+        // Quit
+        case 'q':
+        case 'Q':
+            free_data ();
+            exit ( 0 );
+            break;
 
-    case 'b':
-        show_force = !show_force;
-        break;
+        // Pause simulation
+        case ' ':
+            dsim = !dsim;
+            break;
 
-    case '1':
-        scene_int = 1;
-        init_system();
-        break;
-    case '2':
-        scene_int = 2;
-        init_system();
-        break;
-    case '3':
-        scene_int = 3;
-        init_system();
-        break;
+        // Toggle draw functions
+        case 'v':
+            show_velocity = !show_velocity;
+            break;
+        case 'b':
+            show_force = !show_force;
+            break;
+
+        // Switch scenes
+        case '1':
+            scene_int = 1;
+            init_system();
+            break;
+        case '2':
+            scene_int = 2;
+            init_system();
+            break;
+        case '3':
+            scene_int = 3;
+            init_system();
+            break;
+        case '4':
+            scene_int = 4;
+            init_system();
+            break;
     }
 }
 
@@ -366,14 +363,14 @@ static void mouse_interact ()
         float r = (win_y - my) / (float)win_y;
         q = q * 2 - 1;
         r = r * 2 - 1;
-        mouseParticle->m_Position = Vec2(q, r);
+        mouse_particle->m_Position = Vec2(q, r);
 
         // Update the velocity of the mouse particle
         float o_q = omx / (float)win_x;
         float o_r = (win_y - omy) / (float)win_y;
         o_q = o_q * 2 - 1;
         o_r = o_r * 2 - 1;
-        mouseParticle->m_Velocity = Vec2(q - o_q, r - o_r);
+        mouse_particle->m_Velocity = Vec2(q - o_q, r - o_r);
 
         // Don't add more particles if we are already dragging one or more
         if (particle_selected) return;
@@ -385,8 +382,8 @@ static void mouse_interact ()
 		int i = 0;
         for (Particle* p : pVector) {
             if (is_inside_bbox(p->m_Position, min, max)) {
-                float dist = sqrt(pow(mouseParticle->m_Position[0] - p->m_Position[0], 2) + pow(mouseParticle->m_Position[1] - p->m_Position[1], 2));
-                mouseForces.push_back(new MouseSpringForce(i, mouseParticle, dist, 50.0, 0.2));
+                float dist = sqrt(pow(mouse_particle->m_Position[0] - p->m_Position[0], 2) + pow(mouse_particle->m_Position[1] - p->m_Position[1], 2));
+                mouse_forces.push_back(new MouseSpringForce(i, mouse_particle, dist, 1.0, 0.2));
                 particle_selected = true;
             }
 			i++;
@@ -395,7 +392,7 @@ static void mouse_interact ()
 
     // Remove all mouse spring forces
     if (!mouse_down[0] && particle_selected) {
-        mouseForces.clear();
+        mouse_forces.clear();
         particle_selected = false;
     }
 }
@@ -408,16 +405,15 @@ static void idle_func ( void )
 #ifdef DEBUG
 			printf("Iteration %i\n", i);
 #endif
-			state->advance(dt, pVector, constraints, forces, mouseForces);
+			state->advance(dt, pVector, constraints, forces, mouse_forces);
 		}
 		state->copy_to_particles(pVector);
 #ifdef STEP
 		dsim = false;
 #endif
-        // mouse_interact();
+        mouse_interact();
 	}else{
 		get_from_UI();
-		remap_GUI();
 	}
 
 	glutSetWindow ( win_id );
@@ -506,7 +502,7 @@ int main ( int argc, char ** argv )
 	dump_frames = 0;
 	frame_number = 0;
 
-    mouseParticle = new Particle(Vec2(0,0));
+    mouse_particle = new Particle(Vec2(0,0));
 	
 	init_system();
 	

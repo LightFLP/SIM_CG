@@ -1,18 +1,11 @@
 #pragma once
 
-#include "Particle.h"
-#include "Constraint.h"
+#include "CircularWireConstraint.h"
 
-class StaticConstraint : public Constraint {
+class StaticConstraint : public CircularWireConstraint {
 public:
-    StaticConstraint(int p_index, int c_index, Vec2 static_pos);
+    StaticConstraint(int p_index, int c_index, const Vec2 pos)
+            : CircularWireConstraint(p_index, c_index, pos, 0) {};
 
-    virtual void draw();
-
-    virtual double eval_C(GlobalVars* globals);
-    virtual double eval_Cdot(GlobalVars* globals);
-    virtual void eval_J(GlobalVars* globals, std::vector<MatrixBlock> & blocks);
-    virtual void eval_Jdot(GlobalVars* globals, std::vector<MatrixBlock> & blocks);
-private:
-    Vec2 const m_StaticPos;
+    virtual void draw() {};
 };
