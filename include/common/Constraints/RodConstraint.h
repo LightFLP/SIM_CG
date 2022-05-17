@@ -4,7 +4,7 @@
 
 class RodConstraint : public Constraint {
  public:
-  RodConstraint(int p_index1, int p_index2, int c_index, double dist);
+  RodConstraint(int p_index1, int p_index2, double dist);
   virtual void draw();
   virtual double eval_C(GlobalVars* globals);
   virtual double eval_Cdot(GlobalVars* globals);

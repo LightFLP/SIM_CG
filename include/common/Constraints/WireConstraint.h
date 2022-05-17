@@ -6,7 +6,7 @@ class WireConstraint : public Constraint {
     double const m_Height;
 
 public:
-    WireConstraint(int p_index, int c_index, const double m_Height);
+    WireConstraint(int p_index, const double m_Height);
 
     virtual void draw();
 

@@ -86,7 +86,7 @@ void State::advance(double dt, std::vector<Particle*> &particles,
         Jdot->Clear();
         Constraint* c;
         for (i = 0; i < m; i++){
-            c = constraints[i];
+            c = Constraint::_constraints[i];
             globals->C[i] += c->eval_C(globals);
             globals->Cdot[i] += c->eval_Cdot(globals);
             c->eval_J(globals, J->blocks);

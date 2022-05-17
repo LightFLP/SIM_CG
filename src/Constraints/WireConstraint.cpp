@@ -2,8 +2,7 @@
 #include <gfx/vec2.h>
 #include <GL/glut.h>
 
-WireConstraint::WireConstraint(int p_index, int c_index, const double height) : m_Height(height) {
-    m_c_index = c_index;
+WireConstraint::WireConstraint(int p_index, const double height) : m_Height(height) {
     iVector.push_back(p_index);
 }
 

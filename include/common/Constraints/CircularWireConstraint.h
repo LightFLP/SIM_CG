@@ -4,7 +4,7 @@
 
 class CircularWireConstraint : public Constraint {
  public:
-  CircularWireConstraint(int p_index, int c_index, const Vec2 center, const double radius);
+  CircularWireConstraint(int p_index, const Vec2 center, const double radius);
 
   virtual void draw();
 

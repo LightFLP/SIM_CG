@@ -1,9 +1,7 @@
 #include "RodConstraint.h"
 #include <GL/glut.h>
 
-RodConstraint::RodConstraint(int p_index1, int p_index2, int c_index, double dist)
- : m_dist(dist) {
-   m_c_index = c_index;
+RodConstraint::RodConstraint(int p_index1, int p_index2, double dist) : m_dist(dist) {
    iVector.push_back(p_index1);
    iVector.push_back(p_index2);
 }

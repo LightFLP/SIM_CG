@@ -101,7 +101,7 @@ static void init_system(void)
     pVector.clear();
     forces.clear();
     mouse_forces.clear();
-    constraints.clear();
+    Constraint::_constraints.clear();
 
     // Load new scene
     switch (scene_int) {
@@ -122,7 +122,7 @@ static void init_system(void)
     }
 	for (Particle* p : pVector) p->reset();
     // Get list sizes
-    m = constraints.size();
+    m = Constraint::_constraints.size();
     n = pVector.size();
     printf("init: n=%i m=%i\n", n, m);
 	state = new State(solver, n, m, pVector);
@@ -209,7 +209,7 @@ static void draw_forces ( void )
 
 static void draw_constraints ( void )
 {
-	for (Constraint* c : constraints){
+	for (Constraint* c : Constraint::_constraints){
 		c->draw();
 	}
 }
@@ -284,7 +284,7 @@ static void key_func ( unsigned char key, int x, int y )
             for (Particle *p : pVector) p->reset();
             dt_since_start = 0;
             state->reset(pVector);
-            for (Constraint* c : constraints) c->eval_C(state->globals);
+            for (Constraint* c : Constraint::_constraints) c->eval_C(state->globals);
             for (Force* f : forces) f->calculate_forces(state->globals);
             break;
 
@@ -478,7 +478,7 @@ int main ( int argc, char ** argv )
 
 	if ( argc == 1 ) {
 		// 144 * N * dt = 1
-		N = 1000;
+		N = 10;
 		dt = 1/(144.0*N);
 		d = 5.f;
 		fprintf ( stderr, "Using defaults : N=%d dt=%g d=%g\n",

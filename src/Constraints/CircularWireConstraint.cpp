@@ -16,11 +16,10 @@ static void draw_circle(const Vec2 & vect, float radius)
 	glEnd();
 }
 
-CircularWireConstraint::CircularWireConstraint(int p_index, int c_index, const Vec2 center, const double radius) :
-	m_center(center), m_radius(radius) {
-		m_c_index = c_index;
-		iVector.push_back(p_index);
-	}
+CircularWireConstraint::CircularWireConstraint(int p_index, const Vec2 center, const double radius)
+        : m_center(center), m_radius(radius) {
+    iVector.push_back(p_index);
+}
 
 void CircularWireConstraint::draw()
 {

@@ -24,8 +24,8 @@ void Scene::loadDefault(std::vector<Particle*>& pVector, std::vector<Force*>& fo
 
     forces.push_back(new SpringForce(0, 1, dist, 50.0, 0.2));
 
-    constraints.push_back(new CircularWireConstraint(0, 0, center, dist));
-    constraints.push_back(new RodConstraint(1, 2, 1, dist));
+    Constraint::addConstraint(new CircularWireConstraint(0, center, dist));
+    Constraint::addConstraint(new RodConstraint(1, 2, dist));
 }
 
 void Scene::loadDoubleCircle(std::vector<Particle*>& pVector, std::vector<Force*>& forces, std::vector<Constraint*>& constraints) {
@@ -47,9 +47,9 @@ void Scene::loadDoubleCircle(std::vector<Particle*>& pVector, std::vector<Force*
 
     forces.push_back(new SpringForce(0, 1, dist, 50.0, 0.2));
 
-    constraints.push_back(new CircularWireConstraint(0, 0, Vec2(0, 0), dist));
-    constraints.push_back(new CircularWireConstraint(1, 1, 3*offset, dist));
-    constraints.push_back(new RodConstraint(1, 2, 2, dist));
+    Constraint::addConstraint(new CircularWireConstraint(0, center, dist));
+    Constraint::addConstraint(new CircularWireConstraint(1, 3 * offset, dist));
+    Constraint::addConstraint(new RodConstraint(1, 2, dist));
 }
 
 void Scene::loadClothStatic(std::vector<Particle*>& pVector, std::vector<Force*>& forces, std::vector<Constraint*>& constraints) {
@@ -57,10 +57,12 @@ void Scene::loadClothStatic(std::vector<Particle*>& pVector, std::vector<Force*>
     const double dist = 0.2;
     const Vec2 center(0.0, 0.0);
 
-    const int N = 3;
+    const int N = 5;
+    const double offset = N * dist / 2.0;
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
-            pVector.push_back(new Particle(Vec2f(center[0] + j * dist, center[1] - i * dist)));
+            Vec2 pos = Vec2(center[0] + j * dist, center[1] - i * dist);
+            pVector.push_back(new Particle(Vec2(pos[0] - offset, pos[1] + offset)));
         }
     }
 
@@ -73,10 +75,10 @@ void Scene::loadClothStatic(std::vector<Particle*>& pVector, std::vector<Force*>
     }
 
     const double kd_structural = 50.0;
-    const double ks_structural = 0.2;
-    const double kd_shear = 50.0;
-    const double ks_shear = 0.2;
-    const double kd_bending = 50.0;
+    const double ks_structural = 0.4;
+    const double kd_shear = 1.0;
+    const double ks_shear = 1.0;
+    const double kd_bending = 20.0;
     const double ks_bending = 0.2;
 
     for (int i = 0; i < N; i++) {
@@ -84,7 +86,7 @@ void Scene::loadClothStatic(std::vector<Particle*>& pVector, std::vector<Force*>
 
             // Structural springs (neighbours)
             if (i > 0) {
-                forces.push_back(new SpringForce(N * i + j,N * i + j - N, dist, kd_structural, ks_structural));
+                forces.push_back(new SpringForce(N * i + j, N * i + j - N, dist, kd_structural, ks_structural));
             }
             if (j > 0) {
                 forces.push_back(new SpringForce(N * i + j, N * i + j - 1, dist, kd_structural, ks_structural));
@@ -99,38 +101,32 @@ void Scene::loadClothStatic(std::vector<Particle*>& pVector, std::vector<Force*>
             }
 
             // Bending springs (second neighbours)
-//            if (j > 1) {
-//                forces.push_back(new SpringForce(offset + N * i + j, offset + N * i + j - 1,
-//                                                 dist * 2, kd_bending, ks_bending));
-//            }
-//            if (i > 1) {
-//                forces.push_back(new SpringForce(offset + N * i + j, offset + N * i + j - N,
-//                                                 dist * 2, kd_bending, ks_bending));
-//            }
+            if (i > 1) {
+                forces.push_back(new SpringForce(N * i + j, N * i + j - 2 * N, dist * 2, kd_bending, ks_bending));
+            }
+            if (j > 1) {
+                forces.push_back(new SpringForce(N * i + j, N * i + j - 2, dist * 2, kd_bending, ks_bending));
+            }
         }
-
-        // Wire
-//        for (int j = 0; j < N; j++) {
-//            constraints.push_back(new WireConstraint(j, 0, 0, Vec2(0, 0)));
-//        }
-
     }
 
     // Hanging points
-    constraints.push_back(new StaticConstraint(0, 0, pVector[0]->m_ConstructPos));
-    constraints.push_back(new StaticConstraint(N - 1, 1, pVector[N - 1]->m_ConstructPos));
+    Constraint::addConstraint(new StaticConstraint(0, pVector[0]->m_ConstructPos));
+    Constraint::addConstraint(new StaticConstraint(N - 1, pVector[N - 1]->m_ConstructPos));
 }
 
 
 void Scene::loadClothWire(std::vector<Particle*>& pVector, std::vector<Force*>& forces, std::vector<Constraint*>& constraints) {
 
-    const double dist = 0.2;
+    const double dist = 0.05;
     const Vec2 center(0.0, 0.0);
 
-    const int N = 3;
+    const int N = 32;
+    const double offset = N * dist / 2.0;
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
-            pVector.push_back(new Particle(Vec2f(center[0] + j * dist, center[1] - i * dist)));
+            Vec2 pos = Vec2(center[0] + j * dist, center[1] - i * dist);
+            pVector.push_back(new Particle(Vec2(pos[0] - offset, pos[1] + offset)));
         }
     }
 
@@ -143,10 +139,10 @@ void Scene::loadClothWire(std::vector<Particle*>& pVector, std::vector<Force*>& 
     }
 
     const double kd_structural = 50.0;
-    const double ks_structural = 0.2;
-    const double kd_shear = 50.0;
-    const double ks_shear = 0.2;
-    const double kd_bending = 50.0;
+    const double ks_structural = 0.4;
+    const double kd_shear = 1.0;
+    const double ks_shear = 1.0;
+    const double kd_bending = 20.0;
     const double ks_bending = 0.2;
 
     for (int i = 0; i < N; i++) {
@@ -154,7 +150,7 @@ void Scene::loadClothWire(std::vector<Particle*>& pVector, std::vector<Force*>& 
 
             // Structural springs (neighbours)
             if (i > 0) {
-                forces.push_back(new SpringForce(N * i + j,N * i + j - N, dist, kd_structural, ks_structural));
+                forces.push_back(new SpringForce(N * i + j, N * i + j - N, dist, kd_structural, ks_structural));
             }
             if (j > 0) {
                 forces.push_back(new SpringForce(N * i + j, N * i + j - 1, dist, kd_structural, ks_structural));
@@ -169,19 +165,17 @@ void Scene::loadClothWire(std::vector<Particle*>& pVector, std::vector<Force*>& 
             }
 
             // Bending springs (second neighbours)
-//            if (j > 1) {
-//                forces.push_back(new SpringForce(offset + N * i + j, offset + N * i + j - 1,
-//                                                 dist * 2, kd_bending, ks_bending));
-//            }
-//            if (i > 1) {
-//                forces.push_back(new SpringForce(offset + N * i + j, offset + N * i + j - N,
-//                                                 dist * 2, kd_bending, ks_bending));
-//            }
+            if (i > 1) {
+                forces.push_back(new SpringForce(N * i + j, N * i + j - 2 * N, dist * 2, kd_bending, ks_bending));
+            }
+            if (j > 1) {
+                forces.push_back(new SpringForce(N * i + j, N * i + j - 2, dist * 2, kd_bending, ks_bending));
+            }
         }
     }
 
     // Wire
     for (int i = 0; i < N; i++) {
-        constraints.push_back(new WireConstraint(i, i, pVector[i]->m_ConstructPos[1]));
+        Constraint::addConstraint(new WireConstraint(i, pVector[i]->m_ConstructPos[1]));
     }
 }
