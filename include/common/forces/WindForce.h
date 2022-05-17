@@ -2,16 +2,19 @@
 
 #include <Forces/Force.h>
 
+#define inv_rand_max 1 / RAND_MAX
+
 class WindForce : public Force {
     bool *blow;
-    double const strength;
 
 public:
-    WindForce(bool *_blow, double const _strength) : blow(_blow), strength(_strength) {};
+    WindForce(bool *_blow) : blow(_blow) {};
 
     virtual void calculate_forces(GlobalVars* globals) {
-        for (int i : iVector) {
-            globals->Q[2*i] += strength * (1 - globals->x[2*i]) * (*blow);
+        if (*blow) {
+            for (int i : iVector) {
+                globals->Q[2*i] += 0.5 * rand() * inv_rand_max * (1 - globals->x[2*i]);
+            }
         }
     }
 };

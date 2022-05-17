@@ -16,7 +16,7 @@ void Scene::loadDefault(std::vector<Particle*>& pVector, std::vector<Force*>& fo
 
     forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
     forces.push_back(new DragForce(0.0005)); // drag
-    forces.push_back(new WindForce(wind, 0.2)); // wind
+    forces.push_back(new WindForce(wind)); // wind
 
     for (int i = 0; i < pVector.size(); i++){
         forces[0]->register_particle(i); // gravity
@@ -41,7 +41,7 @@ void Scene::loadDoubleCircle(std::vector<Particle*>& pVector, std::vector<Force*
 
     forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
     forces.push_back(new DragForce(0.0005)); // drag
-    forces.push_back(new WindForce(wind, 0.2)); // wind
+    forces.push_back(new WindForce(wind)); // wind
 
     for (int i = 0; i < pVector.size(); i++){
         forces[0]->register_particle(i); // gravity
@@ -61,7 +61,7 @@ void Scene::loadClothStatic(std::vector<Particle*>& pVector, std::vector<Force*>
     const double dist = 0.2;
     const Vec2 center(0.0, 0.0);
 
-    const int N = 5;
+    const int N = 9;
     const double offset = N * dist / 2.0;
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
@@ -72,7 +72,7 @@ void Scene::loadClothStatic(std::vector<Particle*>& pVector, std::vector<Force*>
 
     forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
     forces.push_back(new DragForce(0.0005)); // drag
-    forces.push_back(new WindForce(wind, 0.2)); // wind
+    forces.push_back(new WindForce(wind)); // wind
 
     for (int i = 0; i < pVector.size(); i++){
         forces[0]->register_particle(i); // gravity
@@ -138,7 +138,7 @@ void Scene::loadClothWire(std::vector<Particle*>& pVector, std::vector<Force*>& 
 
     forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
     forces.push_back(new DragForce(0.0005)); // drag
-    forces.push_back(new WindForce(wind, 0.2)); // wind
+    forces.push_back(new WindForce(wind)); // wind
 
     for (int i = 0; i < pVector.size(); i++){
         forces[0]->register_particle(i); // gravity
