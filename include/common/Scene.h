@@ -4,22 +4,23 @@
 
 #include "Particle.h"
 
-#include "Forces/Force.h"
-#include "Forces/ConstantForce.h"
-#include "Forces/DragForce.h"
-#include "Forces/SpringForce.h"
-#include "Forces/MouseSpringForce.h"
+#include "forces/Force.h"
+#include "forces/ConstantForce.h"
+#include "forces/DragForce.h"
+#include "forces/SpringForce.h"
+#include "forces/MouseSpringForce.h"
+#include "forces/WindForce.h"
 
-#include "Constraints/Constraint.h"
-#include "Constraints/CircularWireConstraint.h"
-#include "Constraints/RodConstraint.h"
-#include "Constraints/StaticConstraint.h"
-#include "Constraints/WireConstraint.h"
+#include "constraints/Constraint.h"
+#include "constraints/CircularWireConstraint.h"
+#include "constraints/RodConstraint.h"
+#include "constraints/StaticConstraint.h"
+#include "constraints/WireConstraint.h"
 
 class Scene {
 public:
-    static void loadDefault(std::vector<Particle*>& pVector, std::vector<Force*>& forces);
-    static void loadDoubleCircle(std::vector<Particle*>& pVector, std::vector<Force*>& forces);
-    static void loadClothStatic(std::vector<Particle*>& pVector, std::vector<Force*>& forces);
-    static void loadClothWire(std::vector<Particle*>& pVector, std::vector<Force*>& forces);
+    static void loadDefault(std::vector<Particle*>& pVector, std::vector<Force*>& forces, bool *wind);
+    static void loadDoubleCircle(std::vector<Particle*>& pVector, std::vector<Force*>& forces, bool *wind);
+    static void loadClothStatic(std::vector<Particle*>& pVector, std::vector<Force*>& forces, bool *wind);
+    static void loadClothWire(std::vector<Particle*>& pVector, std::vector<Force*>& forces, bool *wind);
 };

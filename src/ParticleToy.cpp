@@ -61,6 +61,7 @@ static int hmx, hmy;
 // booleans
 static bool show_velocity = false;
 static bool show_force = false;
+static bool blow_wind = false;
 
 
 /*
@@ -106,19 +107,19 @@ static void init_system(void)
     // Load new scene
     switch (scene_int) {
         case 1:
-            Scene::loadDefault(pVector, forces);
+            Scene::loadDefault(pVector, forces, &blow_wind);
             break;
         case 2:
-            Scene::loadDoubleCircle(pVector, forces);
+            Scene::loadDoubleCircle(pVector, forces, &blow_wind);
             break;
         case 3:
-            Scene::loadClothStatic(pVector, forces);
+            Scene::loadClothStatic(pVector, forces, &blow_wind);
             break;
         case 4:
-            Scene::loadClothWire(pVector, forces);
+            Scene::loadClothWire(pVector, forces, &blow_wind);
             break;
         default:
-            Scene::loadDefault(pVector, forces);
+            Scene::loadDefault(pVector, forces, &blow_wind);
     }
 	for (Particle* p : pVector) p->reset();
     // Get list sizes
@@ -306,6 +307,9 @@ static void key_func ( unsigned char key, int x, int y )
             break;
         case 'b':
             show_force = !show_force;
+            break;
+        case 'w':
+            blow_wind = !blow_wind;
             break;
 
         // Switch scenes
