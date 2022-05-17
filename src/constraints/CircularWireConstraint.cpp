@@ -1,4 +1,4 @@
-#include "CircularWireConstraint.h"
+#include "constraints/CircularWireConstraint.h"
 #include <GL/glut.h>
 #include <gfx/vec2.h>
 

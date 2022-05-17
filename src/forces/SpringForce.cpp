@@ -1,4 +1,4 @@
-#include "SpringForce.h"
+#include "forces/SpringForce.h"
 #include <GL/glut.h>
 
 SpringForce::SpringForce(int p_index1, int p_index2, double dist, double ks, double kd) :

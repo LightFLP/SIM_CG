@@ -106,19 +106,19 @@ static void init_system(void)
     // Load new scene
     switch (scene_int) {
         case 1:
-            Scene::loadDefault(pVector, forces, constraints);
+            Scene::loadDefault(pVector, forces);
             break;
         case 2:
-            Scene::loadDoubleCircle(pVector, forces, constraints);
+            Scene::loadDoubleCircle(pVector, forces);
             break;
         case 3:
-            Scene::loadClothStatic(pVector, forces, constraints);
+            Scene::loadClothStatic(pVector, forces);
             break;
         case 4:
-            Scene::loadClothWire(pVector, forces, constraints);
+            Scene::loadClothWire(pVector, forces);
             break;
         default:
-            Scene::loadDefault(pVector, forces, constraints);
+            Scene::loadDefault(pVector, forces);
     }
 	for (Particle* p : pVector) p->reset();
     // Get list sizes

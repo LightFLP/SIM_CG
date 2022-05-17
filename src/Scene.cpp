@@ -1,8 +1,8 @@
-#include "../include/common/Scene.h"
+#include "Scene.h"
 
 #define sqrt2 1.41421356237
 
-void Scene::loadDefault(std::vector<Particle*>& pVector, std::vector<Force*>& forces, std::vector<Constraint*>& constraints) {
+void Scene::loadDefault(std::vector<Particle*>& pVector, std::vector<Force*>& forces) {
     const double dist = 0.2;
     const Vec2 center(0.0, 0.0);
     const Vec2 offset(dist, 0.0);
@@ -28,7 +28,7 @@ void Scene::loadDefault(std::vector<Particle*>& pVector, std::vector<Force*>& fo
     Constraint::addConstraint(new RodConstraint(1, 2, dist));
 }
 
-void Scene::loadDoubleCircle(std::vector<Particle*>& pVector, std::vector<Force*>& forces, std::vector<Constraint*>& constraints) {
+void Scene::loadDoubleCircle(std::vector<Particle*>& pVector, std::vector<Force*>& forces) {
     const double dist = 0.2;
     const Vec2 center(0.0, 0.0);
     const Vec2 offset(dist, 0.0);
@@ -52,7 +52,7 @@ void Scene::loadDoubleCircle(std::vector<Particle*>& pVector, std::vector<Force*
     Constraint::addConstraint(new RodConstraint(1, 2, dist));
 }
 
-void Scene::loadClothStatic(std::vector<Particle*>& pVector, std::vector<Force*>& forces, std::vector<Constraint*>& constraints) {
+void Scene::loadClothStatic(std::vector<Particle*>& pVector, std::vector<Force*>& forces) {
 
     const double dist = 0.2;
     const Vec2 center(0.0, 0.0);
@@ -116,7 +116,7 @@ void Scene::loadClothStatic(std::vector<Particle*>& pVector, std::vector<Force*>
 }
 
 
-void Scene::loadClothWire(std::vector<Particle*>& pVector, std::vector<Force*>& forces, std::vector<Constraint*>& constraints) {
+void Scene::loadClothWire(std::vector<Particle*>& pVector, std::vector<Force*>& forces) {
 
     const double dist = 0.05;
     const Vec2 center(0.0, 0.0);

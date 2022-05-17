@@ -1,4 +1,4 @@
-#include "MouseSpringForce.h"
+#include "forces/MouseSpringForce.h"
 #include <GL/glut.h>
 
 MouseSpringForce::MouseSpringForce(int p_index1, Particle* _mouse_particle, double dist, double ks, double kd) :

@@ -1,4 +1,4 @@
-#include "Constraint.h"
+#include "constraints/Constraint.h"
 
 std::vector<Constraint*> Constraint::_constraints;
 

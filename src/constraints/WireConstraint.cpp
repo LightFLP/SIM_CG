@@ -1,4 +1,4 @@
-#include "WireConstraint.h"
+#include "constraints/WireConstraint.h"
 #include <gfx/vec2.h>
 #include <GL/glut.h>
 

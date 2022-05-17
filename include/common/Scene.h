@@ -18,8 +18,8 @@
 
 class Scene {
 public:
-    static void loadDefault(std::vector<Particle*>& pVector, std::vector<Force*>& forces, std::vector<Constraint*>& constraints);
-    static void loadDoubleCircle(std::vector<Particle*>& pVector, std::vector<Force*>& forces, std::vector<Constraint*>& constraints);
-    static void loadClothStatic(std::vector<Particle*>& pVector, std::vector<Force*>& forces, std::vector<Constraint*>& constraints);
-    static void loadClothWire(std::vector<Particle*>& pVector, std::vector<Force*>& forces, std::vector<Constraint*>& constraints);
+    static void loadDefault(std::vector<Particle*>& pVector, std::vector<Force*>& forces);
+    static void loadDoubleCircle(std::vector<Particle*>& pVector, std::vector<Force*>& forces);
+    static void loadClothStatic(std::vector<Particle*>& pVector, std::vector<Force*>& forces);
+    static void loadClothWire(std::vector<Particle*>& pVector, std::vector<Force*>& forces);
 };
