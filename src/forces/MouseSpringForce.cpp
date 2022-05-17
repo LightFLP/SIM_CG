@@ -16,7 +16,6 @@ void MouseSpringForce::calculate_forces(GlobalVars* globals){
   Vec2 dldt = v0 - v1;
   float l_mag = sqrt(l*l);
   Vec2 fa = -(m_ks*(l_mag - m_dist)+m_kd*(dldt*l)/l_mag)*l/l_mag;
-  Vec2 fb = -fa;
   globals->Q[iVector[0]*2] += fa[0];
   globals->Q[iVector[0]*2+1] += fa[1];
 }

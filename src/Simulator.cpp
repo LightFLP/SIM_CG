@@ -6,12 +6,16 @@ void State::setup_globals(std::vector<Particle*> &particles){
         globals->x[i] = p->m_Position[0];
         globals->v[i] = p->m_Velocity[0];
         globals->W[i] = 1/p->m_Mass;
+#ifdef DEBUG
         printf("i: %i x: %.2f v: %.2f W: %.2f\n", i, globals->x[i], globals->v[i], globals->W[i]);
+#endif
         i++;
         globals->x[i] = p->m_Position[1];
         globals->v[i] = p->m_Velocity[1];
         globals->W[i] = 1/p->m_Mass;
+#ifdef DEBUG
         printf("i: %i x: %.2f v: %.2f W: %.2f\n", i, globals->x[i], globals->v[i], globals->W[i]);
+#endif
         i++;
     }
 }
@@ -56,8 +60,7 @@ GlobalVars* State::evaluate(double dt, Solver* eval_solver){
 }
 
 
-void State::advance(double dt, std::vector<Particle*> &particles, 
-                               std::vector<Constraint*> &constraints, 
+void State::advance(double dt, std::vector<Particle*> &particles,
                                std::vector<Force*> &forces, 
                                std::vector<Force*> &mouse_forces){
 #ifdef DEBUG

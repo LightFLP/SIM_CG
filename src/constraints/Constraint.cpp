@@ -10,7 +10,6 @@ void Constraint::addConstraint(Constraint* constraint) {
 Constraint::~Constraint() {
     for (Constraint *c : Constraint::_constraints) {
         c->iVector.clear();
-        delete c;
     }
     Constraint::_constraints.clear();
 }

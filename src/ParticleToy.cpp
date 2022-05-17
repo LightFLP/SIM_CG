@@ -20,13 +20,11 @@
 #include <fstream>
 #include <GL/glut.h>
 
-
 /* macros */
 
 Solver* solver = new SympleticEulerSolver();
 std::vector<Force*> forces = std::vector<Force*>();
 std::vector<Force*> mouse_forces = std::vector<Force*>();
-std::vector<Constraint*> constraints = std::vector<Constraint*>();
 
 /* global variables */
 
@@ -56,7 +54,6 @@ static int mouse_down[3];
 static int mouse_release[3];
 static int mouse_shiftclick[3];
 static int omx, omy, mx, my;
-static int hmx, hmy;
 
 // booleans
 static bool show_velocity = false;
@@ -75,15 +72,6 @@ static void free_data ( void )
 	pVector.clear();
 }
 
-static void clear_data ( void )
-{
-	int ii, size = pVector.size();
-
-	for(ii=0; ii<size; ii++){
-		pVector[ii]->reset();
-	}
-}
-
 // number of constraints
 static int m;
 // number of particles
@@ -92,9 +80,6 @@ static int n;
 
 static void init_system(void)
 {
-#ifdef DEBUG
-	
-#endif
     // Make sure the simulation is paused
     dsim = true;
 
@@ -125,8 +110,11 @@ static void init_system(void)
     // Get list sizes
     m = Constraint::_constraints.size();
     n = pVector.size();
-    printf("init: n=%i m=%i\n", n, m);
 	state = new State(solver, n, m, pVector);
+
+#ifdef DEBUG
+    printf("init: n=%i m=%i\n", n, m);
+#endif
 }
 
 /*
@@ -217,45 +205,6 @@ static void draw_constraints ( void )
 
 /*
 ----------------------------------------------------------------------
-relates mouse movements to particle toy construction
-----------------------------------------------------------------------
-*/
-
-static void get_from_UI ()
-{
-	int i, j;
-	// int size, flag;
-	int hi, hj;
-	// double x, y;
-	if ( !mouse_down[0] && !mouse_down[2] && !mouse_release[0] 
-	&& !mouse_shiftclick[0] && !mouse_shiftclick[2] ) return;
-
-	i = (int)((       mx /(double)win_x)*N);
-	j = (int)(((win_y-my)/(double)win_y)*N);
-
-	if ( i<1 || i>N || j<1 || j>N ) return;
-
-	if ( mouse_down[0] ) {
-
-	}
-
-	if ( mouse_down[2] ) {
-
-	}
-
-	hi = (int)((       hmx /(double)win_x)*N);
-	hj = (int)(((win_y-hmy)/(double)win_y)*N);
-
-	if( mouse_release[0] ) {
-		
-	}
-
-	omx = mx;
-	omy = my;
-}
-
-/*
-----------------------------------------------------------------------
 GLUT callback routines
 ----------------------------------------------------------------------
 */
@@ -337,7 +286,6 @@ static void mouse_func ( int button, int state, int x, int y )
 	omx = mx = x;
 	omx = my = y;
 
-	if(!mouse_down[0]){hmx=x; hmy=y;}
 	if(mouse_down[button]) mouse_release[button] = state == GLUT_UP;
 	if(mouse_down[button]) mouse_shiftclick[button] = glutGetModifiers()==GLUT_ACTIVE_SHIFT;
 	mouse_down[button] = state == GLUT_DOWN;
@@ -409,15 +357,13 @@ static void idle_func ( void )
 #ifdef DEBUG
 			printf("Iteration %i\n", i);
 #endif
-			state->advance(dt, pVector, constraints, forces, mouse_forces);
+			state->advance(dt, pVector, forces, mouse_forces);
 		}
 		state->copy_to_particles(pVector);
 #ifdef STEP
 		dsim = false;
 #endif
         mouse_interact();
-	}else{
-		get_from_UI();
 	}
 
 	glutSetWindow ( win_id );
@@ -500,7 +446,12 @@ int main ( int argc, char ** argv )
 
 	printf ( "\t Show the velocities with the 'v' key\n" );
 	printf ( "\t Show the forces with the 'b' key\n" );
-	printf ( "\t Switch scenes using the numpad\n" );
+	printf ( "\n" );
+	printf ( "\t Switch to the default scene with the '1' key\n" );
+	printf ( "\t Switch to the double circle scene with the '2' key\n" );
+	printf ( "\t Switch to the static cloth scene with the '3' key\n" );
+	printf ( "\t Switch to the sliding cloth scene with the '4' key\n" );
+	printf ( "\t Switch to the hair scene with the '5' key\n" );
 
 	dsim = 0;
 	dump_frames = 0;
