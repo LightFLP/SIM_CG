@@ -7,7 +7,7 @@
 static void draw_circle(const Vec2 & vect, float radius)
 {
 	glBegin(GL_LINE_LOOP);
-	glColor3f(0.0,1.0,0.0); 
+    glColor3f(0.6, 0.7, 0.8);
 	for (int i=0; i<360; i=i+18)
 	{
 		float degInRad = i*PI/180;

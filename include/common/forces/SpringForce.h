@@ -13,4 +13,5 @@ class SpringForce : public Force {
   Vec2 p0, p1;
   double const m_dist;     // rest length
   double const m_ks, m_kd; // spring strength constants
+  double fraction;         // fraction of the rest length over the distance between particles
 };
