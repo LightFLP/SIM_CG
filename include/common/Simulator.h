@@ -52,8 +52,7 @@ public:
         free(RHS);
     }
 
-    void advance(double dt, std::vector<Particle*> &particles, 
-                            std::vector<Constraint*> &constraints, 
+    void advance(double dt, std::vector<Particle*> &particles,
                             std::vector<Force*> &forces, 
                             std::vector<Force*> &mouse_forces);
 

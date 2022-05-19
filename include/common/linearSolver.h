@@ -74,16 +74,6 @@ class implicitMatrix
     void AddBlocks(std::vector<MatrixBlock> bs){
       for (MatrixBlock& b : bs){
           blocks.push_back(b);
-#ifndef DEBUG
-          printf("\t d loc: %i\n", b.data);
-          printf("br: %i bc: %i nr: %i nc: %i d[0]: %.2f d[1]: %.2f\n", 
-          b.base_row,
-          b.base_col,
-          b.nrows,
-          b.ncols,
-          b.data[0],
-          b.data[1]);
-#endif
       } 
     }
 };

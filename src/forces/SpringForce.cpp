@@ -1,4 +1,4 @@
-#include "SpringForce.h"
+#include "forces/SpringForce.h"
 #include <GL/glut.h>
 
 SpringForce::SpringForce(int p_index1, int p_index2, double dist, double ks, double kd) :
@@ -24,14 +24,16 @@ void SpringForce::calculate_forces(GlobalVars* globals){
   globals->Q[iVector[0]*2+1] += fa[1];
   globals->Q[iVector[1]*2] += fb[0];
   globals->Q[iVector[1]*2+1] += fb[1];
+  fraction = m_dist / l_mag;
 }
 
 void SpringForce::draw()
 {
+  fraction = fraction * fraction * 0.9 + 0.1;
   glBegin( GL_LINES );
-  glColor3f(0.6, 0.7, 0.8);
+  glColor3f(1.0 - fraction, fraction, 0.3);
   glVertex2f( p0[0], p0[1] );
-  glColor3f(0.6, 0.7, 0.8);
+  glColor3f(1.0 - fraction, fraction, 0.3);
   glVertex2f( p1[0], p1[1] );
   glEnd();
 }

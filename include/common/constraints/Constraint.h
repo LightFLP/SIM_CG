@@ -11,6 +11,8 @@ protected:
     std::vector<int> iVector = std::vector<int>();
 
 public:
+    ~Constraint();
+
     virtual void draw() {};
 
     virtual double eval_C(GlobalVars *globals) = 0;

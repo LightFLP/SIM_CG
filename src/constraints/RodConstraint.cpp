@@ -1,4 +1,4 @@
-#include "RodConstraint.h"
+#include "constraints/RodConstraint.h"
 #include <GL/glut.h>
 
 RodConstraint::RodConstraint(int p_index1, int p_index2, double dist) : m_dist(dist) {
