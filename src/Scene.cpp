@@ -179,3 +179,29 @@ void Scene::loadClothWire(std::vector<Particle*>& pVector, std::vector<Force*>& 
         Constraint::addConstraint(new WireConstraint(i, pVector[i]->m_ConstructPos[1]));
     }
 }
+
+void Scene::loadHairStatic(std::vector<Particle*>& pVector, std::vector<Force*>& forces, std::vector<Constraint*>& constraints) {
+    const double dist = 0.2;
+    const Vec2 center(0.0, 0.0);
+    const Vec2 offset(dist, 0.0);
+
+    // Create three particles, attach them to each other
+
+    pVector.push_back(new Particle(center + offset));
+    pVector.push_back(new Particle(center + offset + offset ));
+    pVector.push_back(new Particle(center + offset + offset + offset ));
+
+    forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
+    forces.push_back(new DragForce(0.0005)); // drag
+
+    for (int i = 0; i < pVector.size(); i++){
+        forces[0]->register_particle(i); // gravity
+        forces[1]->register_particle(i); // drag
+    }
+
+    forces.push_back(new SpringForce(0, 1, dist, 50.0, 0.2));
+
+    // Hanging point
+    Constraint::addConstraint(new StaticConstraint(0, pVector[0]->m_ConstructPos));
+    Constraint::addConstraint(new RodConstraint(1, 2, dist));
+}

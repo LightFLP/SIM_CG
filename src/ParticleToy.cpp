@@ -117,6 +117,9 @@ static void init_system(void)
         case 4:
             Scene::loadClothWire(pVector, forces, constraints);
             break;
+        case 5:
+            Scene::loadHairStatic(pVector, forces, constraints);
+            break;
         default:
             Scene::loadDefault(pVector, forces, constraints);
     }
@@ -323,6 +326,10 @@ static void key_func ( unsigned char key, int x, int y )
             break;
         case '4':
             scene_int = 4;
+            init_system();
+            break;
+        case '5':
+            scene_int = 5;
             init_system();
             break;
     }

@@ -22,4 +22,5 @@ public:
     static void loadDoubleCircle(std::vector<Particle*>& pVector, std::vector<Force*>& forces, std::vector<Constraint*>& constraints);
     static void loadClothStatic(std::vector<Particle*>& pVector, std::vector<Force*>& forces, std::vector<Constraint*>& constraints);
     static void loadClothWire(std::vector<Particle*>& pVector, std::vector<Force*>& forces, std::vector<Constraint*>& constraints);
+    static void loadHairStatic(std::vector<Particle*>& pVector, std::vector<Force*>& forces, std::vector<Constraint*>& constraints);
 };
