@@ -25,4 +25,5 @@ public:
     static void loadClothStatic(std::vector<Particle*>& pVector, std::vector<Force*>& forces, bool *wind);
     static void loadClothWire(std::vector<Particle*>& pVector, std::vector<Force*>& forces, bool *wind);
     static void loadHairStatic(std::vector<Particle*>& pVector, std::vector<Force*>& forces, bool *wind);
+    static void loadAngularSpring(std::vector<Particle*>& pVector, std::vector<Force*>& forces, bool *wind);
 };
