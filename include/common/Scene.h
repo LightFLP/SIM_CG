@@ -8,6 +8,7 @@
 #include "forces/ConstantForce.h"
 #include "forces/DragForce.h"
 #include "forces/SpringForce.h"
+#include "forces/AngularSpringForce.h"
 #include "forces/MouseSpringForce.h"
 #include "forces/WindForce.h"
 
@@ -23,5 +24,5 @@ public:
     static void loadDoubleCircle(std::vector<Particle*>& pVector, std::vector<Force*>& forces, bool *wind);
     static void loadClothStatic(std::vector<Particle*>& pVector, std::vector<Force*>& forces, bool *wind);
     static void loadClothWire(std::vector<Particle*>& pVector, std::vector<Force*>& forces, bool *wind);
-    static void loadHairStatic(std::vector<Particle*>& pVector, std::vector<Force*>& forces, std::vector<Constraint*>& constraints);
+    static void loadHairStatic(std::vector<Particle*>& pVector, std::vector<Force*>& forces, bool *wind);
 };

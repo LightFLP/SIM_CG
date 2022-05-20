@@ -104,7 +104,7 @@ static void init_system(void)
             Scene::loadClothWire(pVector, forces, &blow_wind);
             break;
         case 5:
-            Scene::loadHairStatic(pVector, forces, constraints);
+            Scene::loadHairStatic(pVector, forces, &blow_wind);
             break;
         default:
             Scene::loadDefault(pVector, forces, &blow_wind);
