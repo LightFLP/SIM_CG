@@ -101,6 +101,12 @@ static void init_system(void)
         case 4:
             Scene::loadClothWire(pVector, &blow_wind);
             break;
+        case 5:
+            Scene::loadHairStatic(pVector, &blow_wind);
+            break;
+        case 6:
+            Scene::loadAngularSpring(pVector, &blow_wind);
+            break;
         default:
             Scene::loadDefault(pVector, &blow_wind);
     }
@@ -277,6 +283,14 @@ static void key_func ( unsigned char key, int x, int y )
             scene_int = 4;
             init_system();
             break;
+        case '5':
+            scene_int = 5;
+            init_system();
+            break;
+        case '9':
+            scene_int = 6;
+            init_system();
+            break;
     }
 }
 
@@ -451,6 +465,7 @@ int main ( int argc, char ** argv )
 	printf ( "\t Switch to the static cloth scene with the '3' key\n" );
 	printf ( "\t Switch to the sliding cloth scene with the '4' key\n" );
 	printf ( "\t Switch to the hair scene with the '5' key\n" );
+	printf ( "\t Switch to the angular spring scene with the '9' key\n" );
 
 	dsim = 0;
 	dump_frames = 0;
