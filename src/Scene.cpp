@@ -2,7 +2,7 @@
 
 #define sqrt2 1.41421356237
 
-void Scene::loadDefault(std::vector<Particle*>& pVector, std::vector<Force*>& forces, bool *wind) {
+void Scene::loadDefault(std::vector<Particle*>& pVector, bool *wind) {
     const double dist = 0.2;
     const Vec2 center(0.0, 0.0);
     const Vec2 offset(dist, 0.0);
@@ -14,23 +14,23 @@ void Scene::loadDefault(std::vector<Particle*>& pVector, std::vector<Force*>& fo
     pVector.push_back(new Particle(center + offset + offset ));
     pVector.push_back(new Particle(center + offset + offset + offset ));
 
-    forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
-    forces.push_back(new DragForce(0.0005)); // drag
-    forces.push_back(new WindForce(wind)); // wind
+    Force::_forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
+    Force::_forces.push_back(new DragForce(0.0005)); // drag
+    Force::_forces.push_back(new WindForce(wind)); // wind
 
     for (int i = 0; i < pVector.size(); i++){
-        forces[0]->register_particle(i); // gravity
-        forces[1]->register_particle(i); // drag
-        forces[2]->register_particle(i); // wind
+        Force::_forces[0]->register_particle(i); // gravity
+        Force::_forces[1]->register_particle(i); // drag
+        Force::_forces[2]->register_particle(i); // wind
     }
 
-    forces.push_back(new SpringForce(0, 1, dist, 50.0, 0.2));
+    Force::_forces.push_back(new SpringForce(0, 1, dist, 50.0, 0.2));
 
     Constraint::addConstraint(new CircularWireConstraint(0, center, dist));
     Constraint::addConstraint(new RodConstraint(1, 2, dist));
 }
 
-void Scene::loadDoubleCircle(std::vector<Particle*>& pVector, std::vector<Force*>& forces, bool *wind) {
+void Scene::loadDoubleCircle(std::vector<Particle*>& pVector, bool *wind) {
     const double dist = 0.2;
     const Vec2 center(0.0, 0.0);
     const Vec2 offset(dist, 0.0);
@@ -39,24 +39,24 @@ void Scene::loadDoubleCircle(std::vector<Particle*>& pVector, std::vector<Force*
     pVector.push_back(new Particle(center + offset + offset ));
     pVector.push_back(new Particle(center + offset + offset + offset ));
 
-    forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
-    forces.push_back(new DragForce(0.0005)); // drag
-    forces.push_back(new WindForce(wind)); // wind
+    Force::_forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
+    Force::_forces.push_back(new DragForce(0.0005)); // drag
+    Force::_forces.push_back(new WindForce(wind)); // wind
 
     for (int i = 0; i < pVector.size(); i++){
-        forces[0]->register_particle(i); // gravity
-        forces[1]->register_particle(i); // drag
-        forces[2]->register_particle(i); // wind
+        Force::_forces[0]->register_particle(i); // gravity
+        Force::_forces[1]->register_particle(i); // drag
+        Force::_forces[2]->register_particle(i); // wind
     }
 
-    forces.push_back(new SpringForce(0, 1, dist, 50.0, 0.2));
+    Force::_forces.push_back(new SpringForce(0, 1, dist, 50.0, 0.2));
 
     Constraint::addConstraint(new CircularWireConstraint(0, center, dist));
     Constraint::addConstraint(new CircularWireConstraint(1, 3 * offset, dist));
     Constraint::addConstraint(new RodConstraint(1, 2, dist));
 }
 
-void Scene::loadClothStatic(std::vector<Particle*>& pVector, std::vector<Force*>& forces, bool *wind) {
+void Scene::loadClothStatic(std::vector<Particle*>& pVector, bool *wind) {
 
     const double dist = 0.2;
     const Vec2 center(0.0, 0.0);
@@ -70,14 +70,14 @@ void Scene::loadClothStatic(std::vector<Particle*>& pVector, std::vector<Force*>
         }
     }
 
-    forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
-    forces.push_back(new DragForce(0.0005)); // drag
-    forces.push_back(new WindForce(wind)); // wind
+    Force::_forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
+    Force::_forces.push_back(new DragForce(0.0005)); // drag
+    Force::_forces.push_back(new WindForce(wind)); // wind
 
     for (int i = 0; i < pVector.size(); i++){
-        forces[0]->register_particle(i); // gravity
-        forces[1]->register_particle(i); // drag
-        forces[2]->register_particle(i); // wind
+        Force::_forces[0]->register_particle(i); // gravity
+        Force::_forces[1]->register_particle(i); // drag
+        Force::_forces[2]->register_particle(i); // wind
     }
 
     const double kd_structural = 50.0;
@@ -92,26 +92,26 @@ void Scene::loadClothStatic(std::vector<Particle*>& pVector, std::vector<Force*>
 
             // Structural springs (neighbours)
             if (i > 0) {
-                forces.push_back(new SpringForce(N * i + j, N * i + j - N, dist, kd_structural, ks_structural));
+                Force::_forces.push_back(new SpringForce(N * i + j, N * i + j - N, dist, kd_structural, ks_structural));
             }
             if (j > 0) {
-                forces.push_back(new SpringForce(N * i + j, N * i + j - 1, dist, kd_structural, ks_structural));
+                Force::_forces.push_back(new SpringForce(N * i + j, N * i + j - 1, dist, kd_structural, ks_structural));
             }
 
             // Shear springs (diagonal)
             if (i > 0 && j > 0) {
-                forces.push_back(new SpringForce(N * i + j, N * (i - 1) + j - 1, dist * sqrt2, kd_shear, ks_shear));
+                Force::_forces.push_back(new SpringForce(N * i + j, N * (i - 1) + j - 1, dist * sqrt2, kd_shear, ks_shear));
             }
             if (i > 0 && j < N - 1) {
-                forces.push_back(new SpringForce(N * i + j, N * (i - 1) + j + 1, dist * sqrt2, kd_shear, ks_shear));
+                Force::_forces.push_back(new SpringForce(N * i + j, N * (i - 1) + j + 1, dist * sqrt2, kd_shear, ks_shear));
             }
 
             // Bending springs (second neighbours)
             if (i > 1) {
-                forces.push_back(new SpringForce(N * i + j, N * i + j - 2 * N, dist * 2, kd_bending, ks_bending));
+                Force::_forces.push_back(new SpringForce(N * i + j, N * i + j - 2 * N, dist * 2, kd_bending, ks_bending));
             }
             if (j > 1) {
-                forces.push_back(new SpringForce(N * i + j, N * i + j - 2, dist * 2, kd_bending, ks_bending));
+                Force::_forces.push_back(new SpringForce(N * i + j, N * i + j - 2, dist * 2, kd_bending, ks_bending));
             }
         }
     }
@@ -122,7 +122,7 @@ void Scene::loadClothStatic(std::vector<Particle*>& pVector, std::vector<Force*>
 }
 
 
-void Scene::loadClothWire(std::vector<Particle*>& pVector, std::vector<Force*>& forces, bool *wind) {
+void Scene::loadClothWire(std::vector<Particle*>& pVector, bool *wind) {
 
     const double dist = 0.05;
     const Vec2 center(0.0, 0.0);
@@ -136,14 +136,14 @@ void Scene::loadClothWire(std::vector<Particle*>& pVector, std::vector<Force*>& 
         }
     }
 
-    forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
-    forces.push_back(new DragForce(0.0005)); // drag
-    forces.push_back(new WindForce(wind)); // wind
+    Force::_forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
+    Force::_forces.push_back(new DragForce(0.0005)); // drag
+    Force::_forces.push_back(new WindForce(wind)); // wind
 
     for (int i = 0; i < pVector.size(); i++){
-        forces[0]->register_particle(i); // gravity
-        forces[1]->register_particle(i); // drag
-        forces[2]->register_particle(i); // wind
+        Force::_forces[0]->register_particle(i); // gravity
+        Force::_forces[1]->register_particle(i); // drag
+        Force::_forces[2]->register_particle(i); // wind
     }
 
     const double kd_structural = 50.0;
@@ -158,26 +158,26 @@ void Scene::loadClothWire(std::vector<Particle*>& pVector, std::vector<Force*>& 
 
             // Structural springs (neighbours)
             if (i > 0) {
-                forces.push_back(new SpringForce(N * i + j, N * i + j - N, dist, kd_structural, ks_structural));
+                Force::_forces.push_back(new SpringForce(N * i + j, N * i + j - N, dist, kd_structural, ks_structural));
             }
             if (j > 0) {
-                forces.push_back(new SpringForce(N * i + j, N * i + j - 1, dist, kd_structural, ks_structural));
+                Force::_forces.push_back(new SpringForce(N * i + j, N * i + j - 1, dist, kd_structural, ks_structural));
             }
 
             // Shear springs (diagonal)
             if (i > 0 && j > 0) {
-                forces.push_back(new SpringForce(N * i + j, N * (i - 1) + j - 1, dist * sqrt2, kd_shear, ks_shear));
+                Force::_forces.push_back(new SpringForce(N * i + j, N * (i - 1) + j - 1, dist * sqrt2, kd_shear, ks_shear));
             }
             if (i > 0 && j < N - 1) {
-                forces.push_back(new SpringForce(N * i + j, N * (i - 1) + j + 1, dist * sqrt2, kd_shear, ks_shear));
+                Force::_forces.push_back(new SpringForce(N * i + j, N * (i - 1) + j + 1, dist * sqrt2, kd_shear, ks_shear));
             }
 
             // Bending springs (second neighbours)
             if (i > 1) {
-                forces.push_back(new SpringForce(N * i + j, N * i + j - 2 * N, dist * 2, kd_bending, ks_bending));
+                Force::_forces.push_back(new SpringForce(N * i + j, N * i + j - 2 * N, dist * 2, kd_bending, ks_bending));
             }
             if (j > 1) {
-                forces.push_back(new SpringForce(N * i + j, N * i + j - 2, dist * 2, kd_bending, ks_bending));
+                Force::_forces.push_back(new SpringForce(N * i + j, N * i + j - 2, dist * 2, kd_bending, ks_bending));
             }
         }
     }

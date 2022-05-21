@@ -28,7 +28,7 @@ GlobalVars::GlobalVars(const GlobalVars* other){
 
 void GlobalVars::set_pointers(){
     // This is cool
-    int size = DATA_SIZE(n, m);
+    size = DATA_SIZE(n, m);
     data = (double*) malloc(sizeof(double) * size);
     std::memset(data, 0.0, sizeof(double) * size);
     x = data;
@@ -38,4 +38,5 @@ void GlobalVars::set_pointers(){
 
     C = W + 2*n;
     Cdot = C + m;
+
 }

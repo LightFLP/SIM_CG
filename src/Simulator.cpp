@@ -1,4 +1,34 @@
 #include "Simulator.h"
+#include "linearSolver.h"
+#include "GlobalVars.h"
+#include "Particle.h"
+#include "Force.h"
+#include "Constraint.h"
+#include "Solver.h"
+
+void State::setup_calc_mem(){
+    J =    new implicitMatrixWithTrans(m, 2*n);
+    Jdot = new implicitMatrixWithTrans(m, 2*n);
+    JWJt = new implicitJWJt(J);
+    lambda = (double*) malloc(sizeof(double) * m); // allocate space for lambda
+    std::memset(lambda, 0.0, sizeof(double) * m);
+    // setup global_RHS
+    Jq  = (double*) malloc(sizeof(double) * m);
+    JWQ = (double*) malloc(sizeof(double) * m);
+    ksC = (double*) malloc(sizeof(double) * m);
+    kdC = (double*) malloc(sizeof(double) * m);
+    RHS = (double*) malloc(sizeof(double) * m);
+    JWJt->W = globals->W;
+}
+
+State::State(State* other, Solver* _solver){
+    solver = _solver;
+    n = other->n;
+    m = other->m;
+    globals = new GlobalVars(other->globals->n, other->globals->m);
+    std::memcpy(globals->data, other->globals->data, globals->size * sizeof(double));
+    setup_calc_mem();
+}
 
 void State::setup_globals(std::vector<Particle*> &particles){
     int i = 0;
@@ -27,42 +57,13 @@ void State::reset(std::vector<Particle*> &particles){
 
 State::State(Solver* _solver, int _n, int _m, std::vector<Particle*> &particles) : n(_n), m(_m){
     solver = _solver;
-    J =    new implicitMatrixWithTrans(m, 2*n);
-    Jdot = new implicitMatrixWithTrans(m, 2*n);
-    JWJt = new implicitJWJt(J);
-
     globals = new GlobalVars(n, m);
 
     setup_globals(particles);
-
-    // initialise matrices
-//     std::memcpy(JWJt->W, globals->W, sizeof(double)*2*n);
-        JWJt->W = globals->W;
-
-    lambda = (double*) malloc(sizeof(double) * m); // allocate space for lambda
-    std::memset(lambda, 0.0, sizeof(double) * m);
-    // setup global_RHS
-    Jq  = (double*) malloc(sizeof(double) * m);
-    JWQ = (double*) malloc(sizeof(double) * m);
-    ksC = (double*) malloc(sizeof(double) * m);
-    kdC = (double*) malloc(sizeof(double) * m);
-    RHS = (double*) malloc(sizeof(double) * m);
+    setup_calc_mem();
 }
 
-GlobalVars* State::evaluate(double dt, Solver* eval_solver){
-    GlobalVars* new_globals = new GlobalVars(globals);
-    if(!eval_solver){
-        SympleticEulerSolver().simulation_step(new_globals, dt);
-    } else {
-        eval_solver->simulation_step(new_globals, dt);
-    }
-    return new_globals;
-}
-
-
-void State::advance(double dt, std::vector<Particle*> &particles,
-                               std::vector<Force*> &forces, 
-                               std::vector<Force*> &mouse_forces){
+void State::advance(double dt){
 #ifdef DEBUG
         printf("\n---------------[STATE::ADVANCE]----------------\n");
 #endif
@@ -72,8 +73,8 @@ void State::advance(double dt, std::vector<Particle*> &particles,
         
         std::memset(globals->Q, 0.0, sizeof(double) * 2*n);
         // 2a. Accumulate forces
-        for (Force* f : forces) f->calculate_forces(globals);
-        for (Force* f : mouse_forces) f->calculate_forces(globals);
+        for (Force* f : Force::_forces) f->calculate_forces(globals);
+        for (Force* f : Force::_mouse_forces) f->calculate_forces(globals);
 #ifdef DEBUG
         for (i= 0; i < 2*n; i++){
             printf("\tQ[%i] = %.2f\n", i, globals->Q[i]);
@@ -84,7 +85,7 @@ void State::advance(double dt, std::vector<Particle*> &particles,
         // 3a. first evaluate all constraint functions
         // clear old values first
         std::memset(globals->C, 0.0, sizeof(double) * m); 
-	std::memset(globals->Cdot, 0.0, sizeof(double) * m);
+	    std::memset(globals->Cdot, 0.0, sizeof(double) * m);
         J->Clear();
         Jdot->Clear();
         Constraint* c;
@@ -209,7 +210,7 @@ void State::advance(double dt, std::vector<Particle*> &particles,
         free(Qhat);
 
         // 4. Throw all this new found information to our solver
-        solver->simulation_step(globals, dt);
+        solver->simulation_step(this, dt);
     }
 
     void State::copy_to_particles(std::vector<Particle*> &particles){

@@ -8,6 +8,7 @@
 #include "imageio.h"
 #include "EulerSolvers.h"
 #include "RK4Solver.h"
+#include "MidpointSolver.h"
 #include "Scene.h"
 #include "Force.h"
 #include "Constraint.h"
@@ -22,10 +23,7 @@
 
 /* macros */
 
-Solver* solver = new SympleticEulerSolver();
-std::vector<Force*> forces = std::vector<Force*>();
-std::vector<Force*> mouse_forces = std::vector<Force*>();
-
+Solver* solver = new MidpointSolver();
 /* global variables */
 
 static int N;
@@ -85,31 +83,32 @@ static void init_system(void)
 
     // Clear all lists
     pVector.clear();
-    forces.clear();
-    mouse_forces.clear();
+    Force::_forces.clear();
+    Force::_mouse_forces.clear();
     Constraint::_constraints.clear();
 
     // Load new scene
     switch (scene_int) {
         case 1:
-            Scene::loadDefault(pVector, forces, &blow_wind);
+            Scene::loadDefault(pVector, &blow_wind);
             break;
         case 2:
-            Scene::loadDoubleCircle(pVector, forces, &blow_wind);
+            Scene::loadDoubleCircle(pVector, &blow_wind);
             break;
         case 3:
-            Scene::loadClothStatic(pVector, forces, &blow_wind);
+            Scene::loadClothStatic(pVector, &blow_wind);
             break;
         case 4:
-            Scene::loadClothWire(pVector, forces, &blow_wind);
+            Scene::loadClothWire(pVector, &blow_wind);
             break;
         default:
-            Scene::loadDefault(pVector, forces, &blow_wind);
+            Scene::loadDefault(pVector, &blow_wind);
     }
 	for (Particle* p : pVector) p->reset();
     // Get list sizes
     m = Constraint::_constraints.size();
     n = pVector.size();
+    solver = new SympleticMidpointSolver();
 	state = new State(solver, n, m, pVector);
 
 #ifdef DEBUG
@@ -187,11 +186,11 @@ static void draw_particles ( void )
 
 static void draw_forces ( void )
 {
-	for (Force* f : forces){
+	for (Force* f : Force::_forces){
 		f->draw();
 	}
 
-    for (Force* f : mouse_forces){
+    for (Force* f : Force::_mouse_forces){
         f->draw();
     }
 }
@@ -235,7 +234,7 @@ static void key_func ( unsigned char key, int x, int y )
             dt_since_start = 0;
             state->reset(pVector);
             for (Constraint* c : Constraint::_constraints) c->eval_C(state->globals);
-            for (Force* f : forces) f->calculate_forces(state->globals);
+            for (Force* f : Force::_forces) f->calculate_forces(state->globals);
             break;
 
         // Quit
@@ -335,7 +334,7 @@ static void mouse_interact ()
         for (Particle* p : pVector) {
             if (is_inside_bbox(p->m_Position, min, max)) {
                 float dist = sqrt(pow(mouse_particle->m_Position[0] - p->m_Position[0], 2) + pow(mouse_particle->m_Position[1] - p->m_Position[1], 2));
-                mouse_forces.push_back(new MouseSpringForce(i, mouse_particle, dist, 1.0, 0.2));
+                Force::_mouse_forces.push_back(new MouseSpringForce(i, mouse_particle, dist, 1.0, 0.2));
                 particle_selected = true;
             }
 			i++;
@@ -344,7 +343,7 @@ static void mouse_interact ()
 
     // Remove all mouse spring forces
     if (!mouse_down[0] && particle_selected) {
-        mouse_forces.clear();
+        Force::_mouse_forces.clear();
         particle_selected = false;
     }
 }
@@ -357,7 +356,7 @@ static void idle_func ( void )
 #ifdef DEBUG
 			printf("Iteration %i\n", i);
 #endif
-			state->advance(dt, pVector, forces, mouse_forces);
+			state->advance(dt);
 		}
 		state->copy_to_particles(pVector);
 #ifdef STEP
@@ -428,7 +427,7 @@ int main ( int argc, char ** argv )
 
 	if ( argc == 1 ) {
 		// 144 * N * dt = 1
-		N = 10;
+		N = 25;
 		dt = 1/(144.0*N);
 		d = 5.f;
 		fprintf ( stderr, "Using defaults : N=%d dt=%g d=%g\n",

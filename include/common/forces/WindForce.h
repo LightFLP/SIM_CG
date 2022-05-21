@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Forces/Force.h>
+#include "GlobalVars.h"
 
 #define inv_rand_max 1 / RAND_MAX
 

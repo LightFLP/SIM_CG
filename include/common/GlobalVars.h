@@ -6,6 +6,7 @@
 class GlobalVars{
 public:
     int n; // particles
+    int size;
     double* data;
 
     // state vectors of size 2*n

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Forces/Force.h>
+#include "GlobalVars.h"
 
 class DragForce : public Force{
     public:

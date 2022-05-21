@@ -1,23 +1,8 @@
 #include "Solver.h"
-
-#include <vector>
-
-#include <valarray>
-
-typedef std::vector<Vec2> MathVec;
-
+#include "Simulator.h" //State import
 
 class RK4Solver : public Solver{
-
-	
-
 	public:
-		void simulation_step( GlobalVars* globals, float dt )
-		{
-			for (int i = 0; i < globals->n*2; i++)
-			{
-				
-			}
-		}
+		void simulation_step( State* state, double dt );
 };
 

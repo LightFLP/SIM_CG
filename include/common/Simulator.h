@@ -1,15 +1,13 @@
-#ifndef SIMULATOR_H
-#define SIMULATOR_H
+#pragma once
 // #define DEBUG
-#include "Solver.h"
-#include "Particle.h"
-#include "Constraint.h"
-#include "Force.h"
-#include "linearSolver.h"
-#include "EulerSolvers.h"
-#include "GlobalVars.h"
 #include <vector>
+#include <cstdlib>
 
+class Solver;
+class implicitMatrixWithTrans;
+class implicitJWJt;
+class Particle;
+class GlobalVars;
 
 //TODO: Advance/evaluate
 
@@ -39,6 +37,11 @@ class State{
 
 public:
     GlobalVars* globals;
+
+    void setup_calc_mem();
+
+    State(State* other, Solver* solver = nullptr);
+
     State(Solver* _solver, int _n, int _m, std::vector<Particle*> &particles);
     
     void reset(std::vector<Particle*> &particles);
@@ -52,13 +55,8 @@ public:
         free(RHS);
     }
 
-    void advance(double dt, std::vector<Particle*> &particles,
-                            std::vector<Force*> &forces, 
-                            std::vector<Force*> &mouse_forces);
-
-    GlobalVars* evaluate(double dt, Solver* eval_solver = NULL);
+    void advance(double dt);
 
     void copy_to_particles(std::vector<Particle*> &particles);
 };
 
-#endif

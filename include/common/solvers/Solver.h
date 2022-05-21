@@ -1,8 +1,7 @@
 #pragma once
-#include "GlobalVars.h"
+class State;
 
 class Solver{
 	public:
-		virtual void simulation_step(GlobalVars* globals, float dt) = 0;
+		virtual void simulation_step(State* state, double dt) = 0;
 };
-

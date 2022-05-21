@@ -19,8 +19,8 @@
 
 class Scene {
 public:
-    static void loadDefault(std::vector<Particle*>& pVector, std::vector<Force*>& forces, bool *wind);
-    static void loadDoubleCircle(std::vector<Particle*>& pVector, std::vector<Force*>& forces, bool *wind);
-    static void loadClothStatic(std::vector<Particle*>& pVector, std::vector<Force*>& forces, bool *wind);
-    static void loadClothWire(std::vector<Particle*>& pVector, std::vector<Force*>& forces, bool *wind);
+    static void loadDefault(std::vector<Particle*>& pVector, bool *wind);
+    static void loadDoubleCircle(std::vector<Particle*>& pVector, bool *wind);
+    static void loadClothStatic(std::vector<Particle*>& pVector, bool *wind);
+    static void loadClothWire(std::vector<Particle*>& pVector, bool *wind);
 };

@@ -2,6 +2,7 @@
 
 #include "Particle.h"
 #include "Force.h"
+#include "GlobalVars.h"
 
 class MouseSpringForce : public Force {
  public:

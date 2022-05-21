@@ -1,9 +1,7 @@
 #pragma once
 
-#include <Particle.h>
-#include <gfx/vec2.h>
 #include <vector>
-#include <GlobalVars.h>
+class GlobalVars;
 
 
 class Force{
@@ -15,4 +13,9 @@ class Force{
         }
         virtual void calculate_forces(GlobalVars* globals){}
         virtual void draw(){}
+
+        static std::vector<Force*> _forces;
+        static std::vector<Force*> _mouse_forces;
+        static void AddForce(Force* force);
+        static void AddMouseForce(Force* mouse_force);
 };
