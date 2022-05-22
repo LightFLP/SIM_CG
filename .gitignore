@@ -13,6 +13,9 @@
 # Compiled objs
 obj/*
 
+# Snapshots
+snapshots/*
+
 # Binaries
 bin/*
 
@@ -21,3 +24,4 @@ bin/*
 
 # Coding environment
 .vscode/*
+

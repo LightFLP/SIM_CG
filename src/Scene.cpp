@@ -192,7 +192,7 @@ void Scene::loadHairStatic(std::vector<Particle*>& pVector, bool *wind) {
 
     const double dist = 0.1;
     const Vec2 center(0.0, +0.5f);
-    const double angle_rad = 1.745;
+    const double angle_degree = 45;
     const double ks_angular = 20;
     const double kd_angular = 0.2;
     const double kd_spring = 50.0;
@@ -221,23 +221,18 @@ void Scene::loadHairStatic(std::vector<Particle*>& pVector, bool *wind) {
     }
 
     for (int i = 0; i < N-2; i++) {
-        Force::_forces.push_back(new AngularSpringForce(i, i+1, i+2, angle_rad, ks_angular, kd_angular)); // angular spring
+        Force::_forces.push_back(new AngularSpringForce(i, i+1, i+2, angle_degree, ks_angular, kd_angular)); // angular spring
         spring_forces_count += 1;
     }
-
-    //std::cout << "Nr of springs:" << spring_forces_count << std::endl;
-
 
     for (int i = 0; i < spring_forces_count; i++) {
         Force::_forces[3+i]->register_particle(i);
         Force::_forces[3+i]->register_particle(i+1);
         Force::_forces[3+i]->register_particle(i+2);
-        //std::cout << "Registering particles:" << i << "," << i+1 << "," << i+2 << ", to force:" << 3+i << std::endl;
     }
 
     for (int i = 0; i < pVector.size()-1; i++) {
         Force::_forces.push_back(new SpringForce(i, i+1, dist, kd_spring, ks_spring));
-        //std::cout << "Registering particles:" << i << "," << i+1 << " to spring force" << std::endl;
     }
 
     // Hanging point
@@ -246,8 +241,12 @@ void Scene::loadHairStatic(std::vector<Particle*>& pVector, bool *wind) {
 
 void Scene::loadAngularSpring(std::vector<Particle*>& pVector, bool *wind) {
     const double dist = 0.2;
-    const double kd_structural = 50.0;
-    const double ks_structural = 0.4;
+    const double angle_degree = 90;
+    const double ks_angular = 20;
+    const double kd_angular = 0.2;
+    const double ks_spring = 50.0;
+    const double kd_spring = 0.4;
+
 
     const Vec2 center(0.0, +0.5f);
     const Vec2 offset_left(-dist, 0.0);
@@ -260,20 +259,20 @@ void Scene::loadAngularSpring(std::vector<Particle*>& pVector, bool *wind) {
     pVector.push_back(new Particle(offset_right));
     std::cout << "Nr of particles:" << pVector.size() << std::endl;
 
-    //forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
-    //forces.push_back(new DragForce(0.0005)); // drag
+    Force::_forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
+    Force::_forces.push_back(new DragForce(0.0005)); // drag
     Force::_forces.push_back(new WindForce(wind)); // wind
-    Force::_forces.push_back(new AngularSpringForce(0, 1, 2, 0.5 , 0.5, 0.1)); // angular spring
+    Force::_forces.push_back(new AngularSpringForce(0, 1, 2, angle_degree , ks_angular, kd_angular)); // angular spring
 
     for (int i = 0; i < pVector.size(); i++){
-//        forces[0]->register_particle(i); // gravity
-//        forces[1]->register_particle(i); // drag
+//        Force::_forces[0]->register_particle(i); // gravity
+        Force::_forces[1]->register_particle(i); // drag
         Force::_forces[2]->register_particle(i); // wind
         Force::_forces[3]->register_particle(i); // angular spring force
     }
 
-    Force::_forces.push_back(new SpringForce(0, 1, dist, kd_structural, ks_structural));
-    Force::_forces.push_back(new SpringForce(1, 2, dist, kd_structural, ks_structural));
+    Force::_forces.push_back(new SpringForce(0, 1, dist, ks_spring, kd_spring));
+    Force::_forces.push_back(new SpringForce(1, 2, dist, ks_spring, kd_spring));
 
     // Hanging point
     Constraint::addConstraint(new StaticConstraint(0, pVector[0]->m_ConstructPos));

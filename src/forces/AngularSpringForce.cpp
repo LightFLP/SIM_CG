@@ -2,6 +2,8 @@
 #include "GlobalVars.h"
 #include <GL/glut.h>
 
+#define PI 3.1415926535897932384626433832795
+
 AngularSpringForce::AngularSpringForce(int p_index1, int p_index2, int p_index3, double ra, double ks, double kd) :
 m_ra(ra),m_dist(0), m_ks(ks), m_kd(kd) {
     register_particle(p_index1);
@@ -9,12 +11,12 @@ m_ra(ra),m_dist(0), m_ks(ks), m_kd(kd) {
     register_particle(p_index3);
 }
 
-AngularSpringForce::AngularSpringForce(int p_index1, int p_index2, int p_index3, double ra, double dist, double ks, double kd) :
-m_ra(ra), m_dist(dist), m_ks(ks), m_kd(kd) {
-    register_particle(p_index1);
-    register_particle(p_index2);
-    register_particle(p_index3);
-}
+//AngularSpringForce::AngularSpringForce(int p_index1, int p_index2, int p_index3, double ra, double dist, double ks, double kd) :
+//m_ra(ra), m_dist(dist), m_ks(ks), m_kd(kd) {
+//    register_particle(p_index1);
+//    register_particle(p_index2);
+//    register_particle(p_index3);
+//}
 
 void AngularSpringForce::calculate_forces(GlobalVars* globals){
 
@@ -23,18 +25,20 @@ void AngularSpringForce::calculate_forces(GlobalVars* globals){
     p2 = globals->get_pos(iVector[2]);
 
     Vec2 v0 = globals->get_vel(iVector[0]);
-    Vec2 v1 = globals->get_vel(iVector[1]);
     Vec2 v2 = globals->get_vel(iVector[2]);
 
 #ifdef DEBUG
+    Vec2 v1 = globals->get_vel(iVector[1]);
     printf("p0 = (%.2f, %.2f) p1 = (%.2f, %.2f) p2 = (%.2f, %.2f) v0 = (%.2f, %.2f) v1 = (%.2f, %.2f) v2 = (%.2f, %.2f)\n", p0[0], p0[1], p1[0], p1[1], p2[0], p2[1], v0[0], v0[1], v1[0], v1[1],v2[0], v2[1]);
 #endif
 
     Vec2 l1 = p0 - p1;
     Vec2 l2 = p2 - p1;
 
+
     // Apply cosine rule
-    double cosSubtAngle = cos(m_ra);
+    float degInRad = m_ra*PI/180;
+    double cosSubtAngle = cos(degInRad);
     double b = sqrt(l1*l1);
     double c = sqrt(l2*l2);
     double r = sqrt(b * b + c * c - 2 * b * c * cosSubtAngle);
