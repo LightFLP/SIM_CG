@@ -12,7 +12,6 @@ MidpointSolver::MidpointSolver(Solver* _solver){
 
 void MidpointSolver::simulation_step( State* state, double dt ){ 
     if (!midpoint_state){
-        std::cout << "Copying state..." << std::endl;
         midpoint_state = new State(state, solver);
     }else{
         std::memcpy(midpoint_state->globals->data, state->globals->data, state->globals->size * sizeof(double));
@@ -36,7 +35,6 @@ SympleticMidpointSolver::SympleticMidpointSolver(Solver* _solver){
 
 void SympleticMidpointSolver::simulation_step( State* state, double dt ){ 
     if (!midpoint_state){
-        std::cout << "Copying state..." << std::endl;
         midpoint_state = new State(state, solver);
     }else{
         std::memcpy(midpoint_state->globals->data, state->globals->data, state->globals->size * sizeof(double));
