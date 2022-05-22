@@ -9,8 +9,6 @@ class implicitJWJt;
 class Particle;
 class GlobalVars;
 
-//TODO: Advance/evaluate
-
 class State{
     Solver* solver;
     int n, m;
