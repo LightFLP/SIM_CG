@@ -7,6 +7,7 @@ class Particle
 public:
 
 	Particle(const Vec2 & ConstructPos);
+	Particle(const Vec2 & ConstructPos, const float mass);
 	virtual ~Particle(void);
 
 	void reset();
@@ -18,5 +19,5 @@ public:
 	Vec2 m_Velocity;
 	
 	Vec2 m_ForceAccum;
-	float m_Mass = 0.01;
+	const float m_Mass;
 };

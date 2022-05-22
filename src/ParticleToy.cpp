@@ -459,6 +459,7 @@ int main ( int argc, char ** argv )
 
 	printf ( "\t Show the velocities with the 'v' key\n" );
 	printf ( "\t Show the forces with the 'b' key\n" );
+	printf ( "\t Turn on/off the wind with the 'w' key\n" );
 	printf ( "\n" );
 	printf ( "\t Switch to the default scene with the '1' key\n" );
 	printf ( "\t Switch to the double circle scene with the '2' key\n" );

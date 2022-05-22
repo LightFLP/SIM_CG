@@ -4,8 +4,12 @@
 #define VIS_MULT_VEL 0.1
 #define VIS_MULT_FOR 0.01
 
-Particle::Particle(const Vec2 & ConstructPos) :
-	m_ConstructPos(ConstructPos), m_Position(Vec2(0.0, 0.0)), m_Velocity(Vec2(0.0, 0.0))
+Particle::Particle(const Vec2 & ConstructPos, const float mass) :
+        m_ConstructPos(ConstructPos), m_Position(Vec2(0.0, 0.0)), m_Velocity(Vec2(0.0, 0.0)), m_Mass(mass)
+{
+}
+
+Particle::Particle(const Vec2 & ConstructPos) : Particle(ConstructPos, 0.01)
 {
 }
 

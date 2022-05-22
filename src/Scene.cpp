@@ -197,16 +197,16 @@ void Scene::loadHairStatic(std::vector<Particle*>& pVector, bool *wind) {
     const double kd_angular = 0.2;
     const double kd_spring = 50.0;
     const double ks_spring = 0.4;
-    const int N = 9;
+    const int N = 27;
     int spring_forces_count = 0;
 
     for (int i = 0; i < N; i++) {
 
         if(i%2)
         {
-            pVector.push_back(new Particle(Vec2(center[0] + 0.5, center[1] - i * dist)));
+            pVector.push_back(new Particle(Vec2(center[0] + 0.5, center[1] - i * dist), 0.001));
         }else{
-            pVector.push_back(new Particle(Vec2(center[0], center[1] - i * dist)));
+            pVector.push_back(new Particle(Vec2(center[0], center[1] - i * dist), 0.001));
         }
     }
 
