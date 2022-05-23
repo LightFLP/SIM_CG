@@ -3,7 +3,8 @@
 #include <vector>
 
 #include "linearSolver.h"
-#include "GlobalVars.h"
+
+class GlobalVars;
 
 class Constraint {
 protected:
@@ -20,7 +21,7 @@ public:
     virtual void eval_J(GlobalVars *globals, std::vector <MatrixBlock> &blocks) = 0;
     virtual void eval_Jdot(GlobalVars *globals, std::vector <MatrixBlock> &blocks) = 0;
 
-    static std::vector<Constraint*> _constraints;
-    static void addConstraint(Constraint* constraint);
+    static std::vector<Constraint *> _constraints;
+    static void addConstraint(Constraint *constraint);
 
 };

@@ -3,22 +3,22 @@
 #include <gfx/Vec2.h>
 #include <cstring>
 
-class GlobalVars{
+class GlobalVars {
 public:
     int n; // particles
     int size;
-    double* data;
+    double *data;
 
     // state vectors of size 2*n
-    double* x;
-    double* v;
-    double* Q;
-    double* W;
+    double *x;
+    double *v;
+    double *Q;
+    double *W;
 
     int m; // constraints
     // state vectors of size m
-    double* C;
-    double* Cdot;
+    double *C;
+    double *Cdot;
 
     Vec2 get_pos(int p_index);
 
@@ -28,9 +28,9 @@ public:
 
     GlobalVars(int _n, int _m);
 
-    GlobalVars(const GlobalVars* other);
+    GlobalVars(const GlobalVars *other);
 
-    ~GlobalVars(){
+    ~GlobalVars() {
         printf("Globals data got freed.\n");
         free(data);
     }

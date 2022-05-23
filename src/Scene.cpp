@@ -1,5 +1,21 @@
 #include "Scene.h"
 
+#include "Particle.h"
+
+#include "Force.h"
+#include "ConstantForce.h"
+#include "DragForce.h"
+#include "SpringForce.h"
+#include "AngularSpringForce.h"
+#include "MouseSpringForce.h"
+#include "WindForce.h"
+
+#include "Constraint.h"
+#include "CircularWireConstraint.h"
+#include "RodConstraint.h"
+#include "StaticConstraint.h"
+#include "WireConstraint.h"
+
 #define sqrt2 1.41421356237
 
 void Scene::loadDefault(std::vector<Particle*>& pVector, bool *wind) {
