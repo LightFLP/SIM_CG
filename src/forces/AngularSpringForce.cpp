@@ -31,6 +31,7 @@ void AngularSpringForce::calculate_forces(GlobalVars *globals) {
     Vec2 l2 = p2 - p1;
 
 
+
     // Apply cosine rule
     float degInRad = m_ra*PI/180;
     double cosSubtAngle = cos(degInRad);
@@ -46,6 +47,8 @@ void AngularSpringForce::calculate_forces(GlobalVars *globals) {
 
     Vec2 fa = -(m_ks * (l_mag - r) + m_kd * ((l * dldt) / l_mag)) * (l / l_mag);
     Vec2 fb = -fa;
+
+//    std::cout << r << std::endl;
 
     globals->Q[iVector[0] * 2] += fa[0];
     globals->Q[iVector[0] * 2 + 1] += fa[1];
