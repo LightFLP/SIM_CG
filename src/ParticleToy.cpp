@@ -24,7 +24,7 @@
 
 /* macros */
 
-Solver *solver = new MidpointSolver();
+Solver *solver;
 /* global variables */
 
 static int N;
@@ -47,6 +47,7 @@ static std::vector<Particle *> pVector;
 static Particle *mouse_particle;
 static int particle_selected = false;
 static int scene_int = 1;
+static int solver_int = 1;
 
 static int win_id;
 static int win_x, win_y;
@@ -108,7 +109,21 @@ static void init_system(void) {
     // Get list sizes
     m = Constraint::_constraints.size();
     n = pVector.size();
-    solver = new SympleticMidpointSolver();
+
+    switch (solver_int) {
+        case 1:
+            solver = new EulerSolver(); break;
+        case 2:
+            solver = new SympleticEulerSolver(); break;
+        case 3:
+            solver = new MidpointSolver(); break;
+        case 4:
+            solver = new SympleticMidpointSolver(); break;
+//        case 5:
+//            solver = new RK4Solver(); break;
+        default:
+            solver = new EulerSolver();
+    }
     state = new State(solver, n, m, pVector);
 
 #ifdef DEBUG
@@ -209,7 +224,8 @@ static void key_func(unsigned char key, int x, int y) {
 
         // Dump screen and frame times
         case 'd':
-        case 'D':dump_frames = !dump_frames;
+        case 'D':
+            dump_frames = !dump_frames;
             if (dump_frames) {
                 filesystem_opened++;
                 static char filename[80];
@@ -222,7 +238,8 @@ static void key_func(unsigned char key, int x, int y) {
 
             // Reset simulation
         case 'r':
-        case 'R':dsim = false;
+        case 'R':
+            dsim = false;
             for (Particle *p: pVector) { p->reset(); }
             dt_since_start = 0;
             state->reset(pVector);
@@ -237,34 +254,51 @@ static void key_func(unsigned char key, int x, int y) {
             break;
 
             // Pause simulation
-        case ' ':dsim = !dsim;
-            break;
+        case ' ':
+            dsim = !dsim; break;
 
             // Toggle draw functions
-        case 'v':show_velocity = !show_velocity;
+        case 'v':
+            show_velocity = !show_velocity; break;
+        case 'b':
+            show_force = !show_force; break;
+        case 'w':
+            blow_wind = !blow_wind; break;
+
+            // Switch solver
+        case '1':
+            solver_int = 1;
+            init_system();
             break;
-        case 'b':show_force = !show_force;
+        case '2':
+            solver_int = 2;
+            init_system();
             break;
-        case 'w':blow_wind = !blow_wind;
+        case '3':
+            solver_int = 3;
+            init_system();
+            break;
+        case '4':
+            solver_int = 4;
+            init_system();
+            break;
+//        case '5':
+//            solver_int = 5;
+//            init_system();
+//            break;
+//        case '6':
+//            solver_int = 6;
+//            init_system();
+//            break;
+
+            // Switch scene
+        case '.':
+            scene_int += scene_int == 6 ? 0 : 1; // NB keep this in sync with the number of scenes
+            init_system();
             break;
 
-            // Switch scenes
-        case '1':scene_int = 1;
-            init_system();
-            break;
-        case '2':scene_int = 2;
-            init_system();
-            break;
-        case '3':scene_int = 3;
-            init_system();
-            break;
-        case '4':scene_int = 4;
-            init_system();
-            break;
-        case '5':scene_int = 5;
-            init_system();
-            break;
-        case '9':scene_int = 6;
+        case ',':
+            scene_int -= scene_int == 1 ? 0 : 1;
             init_system();
             break;
     }
@@ -430,12 +464,15 @@ int main(int argc, char **argv) {
     printf("\t Show the forces with the 'b' key\n");
     printf("\t Turn on/off the wind with the 'w' key\n");
     printf("\n");
-    printf("\t Switch to the default scene with the '1' key\n");
-    printf("\t Switch to the double circle scene with the '2' key\n");
-    printf("\t Switch to the static cloth scene with the '3' key\n");
-    printf("\t Switch to the sliding cloth scene with the '4' key\n");
-    printf("\t Switch to the hair scene with the '5' key\n");
-    printf("\t Switch to the angular spring scene with the '9' key\n");
+    printf("\t Switch between scenes using the '<' and '>' keys\n");
+    printf("\n");
+    printf("\t Switch the solver to Euler with the '1' key\n");
+    printf("\t Switch the solver to Sympletic Euler with the '2' key\n");
+    printf("\t Switch the solver to Midpoint with the '3' key\n");
+    printf("\t Switch the solver to Sympletic Midpoint with the '4' key\n");
+    printf("\t Switch the solver to Runge-Kutta with the '5' key\n");
+    printf("\t Switch the solver to Simpletic Runge-Kutta with the '6' key\n");
+
 
     dsim = 0;
     dump_frames = 0;
