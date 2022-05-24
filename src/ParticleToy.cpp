@@ -36,6 +36,7 @@ static int n_frames;
 static int last_time;
 static int dt_since_start = 0;
 static float fps = 0.0f;
+static double dts;
 
 static int filesystem_opened;
 static std::ofstream frametime_file;
@@ -88,19 +89,20 @@ static void init_system(void) {
 
     // Load new scene
     switch (scene_int) {
-        case 1:Scene::loadDefault(pVector, &blow_wind);
-            break;
-        case 2:Scene::loadDoubleCircle(pVector, &blow_wind);
-            break;
-        case 3:Scene::loadClothStatic(pVector, &blow_wind);
-            break;
-        case 4:Scene::loadClothWire(pVector, &blow_wind);
-            break;
-        case 5:Scene::loadHairStatic(pVector, &blow_wind);
-            break;
-        case 6:Scene::loadAngularSpring(pVector, &blow_wind);
-            break;
-        default:Scene::loadDefault(pVector, &blow_wind);
+        case 1:
+            Scene::loadDefault(pVector, &blow_wind, &dts); break;
+        case 2:
+            Scene::loadDoubleCircle(pVector, &blow_wind, &dts); break;
+        case 3:
+            Scene::loadClothStatic(pVector, &blow_wind, &dts); break;
+        case 4:
+            Scene::loadClothWire(pVector, &blow_wind, &dts); break;
+        case 5:
+            Scene::loadHairStatic(pVector, &blow_wind, &dts); break;
+        case 6:
+            Scene::loadAngularSpring(pVector, &blow_wind, &dts); break;
+        default:
+            Scene::loadDefault(pVector, &blow_wind, &dts);
     }
     for (Particle *p: pVector) { p->reset(); }
     // Get list sizes
@@ -138,8 +140,9 @@ static void post_display(void) {
         last_time += 1.0;
     }
 
+    dts = dt_since_start * dt;
     char *buff = (char *) malloc(sizeof(char) * 1024);
-    sprintf(buff, "Particletoys! - t: %.3f - fps: %.1f", dt_since_start * dt, fps);
+    sprintf(buff, "Particletoys! - t: %.3f - fps: %.1f", dts, fps);
     glutSetWindowTitle(buff);
     free(buff);
     // Write frames if necessary.

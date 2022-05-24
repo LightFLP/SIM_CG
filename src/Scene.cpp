@@ -18,7 +18,7 @@
 
 #define sqrt2 1.41421356237
 
-void Scene::loadDefault(std::vector<Particle*>& pVector, bool *wind) {
+void Scene::loadDefault(std::vector<Particle*>& pVector, bool *wind, double* dt) {
     const double dist = 0.2;
     const Vec2 center(0.0, 0.0);
     const Vec2 offset(dist, 0.0);
@@ -32,7 +32,7 @@ void Scene::loadDefault(std::vector<Particle*>& pVector, bool *wind) {
 
     Force::_forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
     Force::_forces.push_back(new DragForce(0.0005)); // drag
-    Force::_forces.push_back(new WindForce(wind)); // wind
+    Force::_forces.push_back(new WindForce(wind, dt)); // wind
 
     for (int i = 0; i < pVector.size(); i++){
         Force::_forces[0]->register_particle(i); // gravity
@@ -46,7 +46,7 @@ void Scene::loadDefault(std::vector<Particle*>& pVector, bool *wind) {
     Constraint::addConstraint(new RodConstraint(1, 2, dist));
 }
 
-void Scene::loadDoubleCircle(std::vector<Particle*>& pVector, bool *wind) {
+void Scene::loadDoubleCircle(std::vector<Particle*>& pVector, bool *wind, double* dt) {
     const double dist = 0.2;
     const Vec2 center(0.0, 0.0);
     const Vec2 offset(dist, 0.0);
@@ -57,7 +57,7 @@ void Scene::loadDoubleCircle(std::vector<Particle*>& pVector, bool *wind) {
 
     Force::_forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
     Force::_forces.push_back(new DragForce(0.0005)); // drag
-    Force::_forces.push_back(new WindForce(wind)); // wind
+    Force::_forces.push_back(new WindForce(wind, dt)); // wind
 
     for (int i = 0; i < pVector.size(); i++){
         Force::_forces[0]->register_particle(i); // gravity
@@ -72,7 +72,7 @@ void Scene::loadDoubleCircle(std::vector<Particle*>& pVector, bool *wind) {
     Constraint::addConstraint(new RodConstraint(1, 2, dist));
 }
 
-void Scene::loadClothStatic(std::vector<Particle*>& pVector, bool *wind) {
+void Scene::loadClothStatic(std::vector<Particle*>& pVector, bool *wind, double* dt) {
 
     const double dist = 0.2;
     const Vec2 center(0.0, 0.0);
@@ -88,7 +88,7 @@ void Scene::loadClothStatic(std::vector<Particle*>& pVector, bool *wind) {
 
     Force::_forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
     Force::_forces.push_back(new DragForce(0.0005)); // drag
-    Force::_forces.push_back(new WindForce(wind)); // wind
+    Force::_forces.push_back(new WindForce(wind, dt)); // wind
 
     for (int i = 0; i < pVector.size(); i++){
         Force::_forces[0]->register_particle(i); // gravity
@@ -138,7 +138,7 @@ void Scene::loadClothStatic(std::vector<Particle*>& pVector, bool *wind) {
 }
 
 
-void Scene::loadClothWire(std::vector<Particle*>& pVector, bool *wind) {
+void Scene::loadClothWire(std::vector<Particle*>& pVector, bool *wind, double* dt) {
 
     const double dist = 0.05;
     const Vec2 center(0.0, 0.0);
@@ -154,7 +154,7 @@ void Scene::loadClothWire(std::vector<Particle*>& pVector, bool *wind) {
 
     Force::_forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
     Force::_forces.push_back(new DragForce(0.0005)); // drag
-    Force::_forces.push_back(new WindForce(wind)); // wind
+    Force::_forces.push_back(new WindForce(wind, dt)); // wind
 
     for (int i = 0; i < pVector.size(); i++){
         Force::_forces[0]->register_particle(i); // gravity
@@ -204,7 +204,7 @@ void Scene::loadClothWire(std::vector<Particle*>& pVector, bool *wind) {
     }
 }
 
-void Scene::loadHairStatic(std::vector<Particle*>& pVector, bool *wind) {
+void Scene::loadHairStatic(std::vector<Particle*>& pVector, bool *wind, double* dt) {
 
     const double dist = 0.1;
     const Vec2 center(0.0, +0.5f);
@@ -228,7 +228,7 @@ void Scene::loadHairStatic(std::vector<Particle*>& pVector, bool *wind) {
 
     Force::_forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
     Force::_forces.push_back(new DragForce(0.0005)); // drag
-    Force::_forces.push_back(new WindForce(wind)); // wind
+    Force::_forces.push_back(new WindForce(wind, dt)); // wind
 
     for (int i = 0; i < pVector.size(); i++){
         Force::_forces[0]->register_particle(i); // gravity
@@ -260,7 +260,7 @@ void Scene::loadHairStatic(std::vector<Particle*>& pVector, bool *wind) {
     Constraint::addConstraint(new StaticConstraint(0, pVector[0]->m_ConstructPos));
 }
 
-void Scene::loadAngularSpring(std::vector<Particle*>& pVector, bool *wind) {
+void Scene::loadAngularSpring(std::vector<Particle*>& pVector, bool *wind, double* dt) {
     const double dist = 0.2;
     const double kd_structural = 50.0;
     const double ks_structural = 0.4;
@@ -278,7 +278,7 @@ void Scene::loadAngularSpring(std::vector<Particle*>& pVector, bool *wind) {
 
     //forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
     //forces.push_back(new DragForce(0.0005)); // drag
-    Force::_forces.push_back(new WindForce(wind)); // wind
+    Force::_forces.push_back(new WindForce(wind, dt)); // wind
     Force::_forces.push_back(new AngularSpringForce(0, 1, 2, 0.5 , 0.5, 0.1)); // angular spring
 
     for (int i = 0; i < pVector.size(); i++){
