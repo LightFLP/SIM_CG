@@ -1,0 +1,8 @@
+//
+// Created by fzamf on 2022-05-22.
+//
+
+#ifndef SIM_CG_ANGULARCONSTRAINT_H
+#define SIM_CG_ANGULARCONSTRAINT_H
+
+#endif //SIM_CG_ANGULARCONSTRAINT_H

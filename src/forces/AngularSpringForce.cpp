@@ -39,6 +39,7 @@ void AngularSpringForce::calculate_forces(GlobalVars* globals){
     // Apply cosine rule
     float degInRad = m_ra*PI/180;
     double cosSubtAngle = cos(degInRad);
+
     double b = sqrt(l1*l1);
     double c = sqrt(l2*l2);
     double r = sqrt(b * b + c * c - 2 * b * c * cosSubtAngle);
