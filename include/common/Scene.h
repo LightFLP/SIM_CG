@@ -2,29 +2,33 @@
 
 #include <vector>
 
-#include "Particle.h"
+class Particle;
 
-#include "forces/Force.h"
-#include "forces/ConstantForce.h"
-#include "forces/DragForce.h"
-#include "forces/SpringForce.h"
-#include "forces/AngularSpringForce.h"
-#include "forces/MouseSpringForce.h"
-#include "forces/WindForce.h"
+class Force;
+class ConstantForce;
+class DragForce;
+class SpringForce;
+class AngularSpringForce;
+class MouseSpringForce;
+class WindForce;
 
-#include "constraints/Constraint.h"
-#include "constraints/CircularWireConstraint.h"
-#include "constraints/RodConstraint.h"
-#include "constraints/StaticConstraint.h"
-#include "constraints/WireConstraint.h"
+class Constraint;
+class CircularWireConstraint;
+class RodConstraint;
+class StaticConstraint;
+class WireConstraint;
 
 class Scene {
 public:
-    static void loadDefault(std::vector<Particle*>& pVector, bool *wind);
-    static void loadDoubleCircle(std::vector<Particle*>& pVector, bool *wind);
-    static void loadClothStatic(std::vector<Particle*>& pVector, bool *wind);
-    static void loadClothWire(std::vector<Particle*>& pVector, bool *wind);
-    
-    static void loadHairStatic(std::vector<Particle*>& pVector, bool *wind);
-    static void loadAngularSpring(std::vector<Particle*>& pVector, bool *wind);
+    static void loadDefault(std::vector<Particle *> &pVector, bool *wind, double* dt);
+
+    static void loadDoubleCircle(std::vector<Particle *> &pVector, bool *wind, double* dt);
+
+    static void loadClothStatic(std::vector<Particle *> &pVector, bool *wind, double* dt);
+
+    static void loadClothWire(std::vector<Particle *> &pVector, bool *wind, double* dt);
+
+    static void loadHairStatic(std::vector<Particle *> &pVector, bool *wind, double* dt);
+
+    static void loadAngularSpring(std::vector<Particle *> &pVector, bool *wind, double* dt);
 };

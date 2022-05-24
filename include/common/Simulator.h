@@ -9,44 +9,42 @@ class implicitJWJt;
 class Particle;
 class GlobalVars;
 
-//TODO: Advance/evaluate
-
-class State{
-    Solver* solver;
+class State {
+    Solver *solver;
     int n, m;
 
-    implicitMatrixWithTrans* J;
-    implicitMatrixWithTrans* Jdot;
+    implicitMatrixWithTrans *J;
+    implicitMatrixWithTrans *Jdot;
 
-    implicitJWJt* JWJt;
-    double* lambda;
+    implicitJWJt *JWJt;
+    double *lambda;
 
-    
+
     // setup RHS of:
     // JWJt * lambda = - Jq - JWQ - alphaC - betaCdot
-	double*  Jq;
-	double* JWQ;
-	double* ksC;
-	double* kdC;
-    double* RHS;
+    double *Jq;
+    double *JWQ;
+    double *ksC;
+    double *kdC;
+    double *RHS;
 
     double alpha = 0;
-    double beta  = 0;
+    double beta = 0;
 
-    void setup_globals(std::vector<Particle*> &particles);
+    void setup_globals(std::vector<Particle *> &particles);
 
 public:
-    GlobalVars* globals;
+    GlobalVars *globals;
 
     void setup_calc_mem();
 
-    State(State* other, Solver* solver = nullptr);
+    State(State *other, Solver *solver = nullptr);
 
-    State(Solver* _solver, int _n, int _m, std::vector<Particle*> &particles);
-    
-    void reset(std::vector<Particle*> &particles);
+    State(Solver *_solver, int _n, int _m, std::vector<Particle *> &particles);
 
-    ~State(){
+    void reset(std::vector<Particle *> &particles);
+
+    ~State() {
         free(globals);
         free(Jq);
         free(JWQ);
@@ -57,6 +55,6 @@ public:
 
     void advance(double dt);
 
-    void copy_to_particles(std::vector<Particle*> &particles);
+    void copy_to_particles(std::vector<Particle *> &particles);
 };
 

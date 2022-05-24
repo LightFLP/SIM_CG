@@ -1,17 +1,14 @@
 #pragma once
+
 #include "Solver.h"
 
-#include <vector>
-
-
-class EulerSolver : public Solver{
-	public:
-		virtual void simulation_step( State* state, double dt );
+class EulerSolver : public Solver {
+public:
+    virtual void simulation_step(State *state, double dt);
 };
 
-
-class SympleticEulerSolver : public Solver{
-	public:
-		virtual void simulation_step( State* state, double dt );
+class SympleticEulerSolver : public Solver {
+public:
+    virtual void simulation_step(State *state, double dt);
 };
 

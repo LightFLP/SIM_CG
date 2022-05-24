@@ -1,24 +1,19 @@
 #include "AngularSpringForce.h"
-#include "GlobalVars.h"
+
 #include <GL/glut.h>
+#include "GlobalVars.h"
 
 #define PI 3.1415926535897932384626433832795
 
+
 AngularSpringForce::AngularSpringForce(int p_index1, int p_index2, int p_index3, double ra, double ks, double kd) :
-m_ra(ra),m_dist(0), m_ks(ks), m_kd(kd) {
+        m_ra(ra), m_dist(0), m_ks(ks), m_kd(kd) {
     register_particle(p_index1);
     register_particle(p_index2);
     register_particle(p_index3);
 }
 
-//AngularSpringForce::AngularSpringForce(int p_index1, int p_index2, int p_index3, double ra, double dist, double ks, double kd) :
-//m_ra(ra), m_dist(dist), m_ks(ks), m_kd(kd) {
-//    register_particle(p_index1);
-//    register_particle(p_index2);
-//    register_particle(p_index3);
-//}
-
-void AngularSpringForce::calculate_forces(GlobalVars* globals){
+void AngularSpringForce::calculate_forces(GlobalVars *globals) {
 
     p0 = globals->get_pos(iVector[0]);
     p1 = globals->get_pos(iVector[1]);
@@ -46,16 +41,16 @@ void AngularSpringForce::calculate_forces(GlobalVars* globals){
 
     // Compute spring force
     Vec2 l = p0 - p2;
-    double l_mag = sqrt(l*l);
+    double l_mag = sqrt(l * l);
     Vec2 dldt = v0 - v2;
 
     Vec2 fa = -(m_ks * (l_mag - r) + m_kd * ((l * dldt) / l_mag)) * (l / l_mag);
     Vec2 fb = -fa;
 
-    globals->Q[iVector[0]*2] += fa[0];
-    globals->Q[iVector[0]*2+1] += fa[1];
-    globals->Q[iVector[2]*2] += fb[0];
-    globals->Q[iVector[2]*2+1] += fb[1];
+    globals->Q[iVector[0] * 2] += fa[0];
+    globals->Q[iVector[0] * 2 + 1] += fa[1];
+    globals->Q[iVector[2] * 2] += fb[0];
+    globals->Q[iVector[2] * 2 + 1] += fb[1];
     fraction = r / l_mag;
 }
 
@@ -123,10 +118,9 @@ void AngularSpringForce::calculate_forces(GlobalVars* globals){
 //    globals->Q[iVector[2]*2+1] += f4[1];
 //}
 
-void AngularSpringForce::draw()
-{
+void AngularSpringForce::draw() {
     fraction = fraction * fraction * 0.9 + 0.1;
-    glBegin( GL_LINES );
+    glBegin(GL_LINES);
     glColor3f(1.0 - fraction, fraction, 0.3);
     // First line
     glVertex2f(p0[0], p0[1]);

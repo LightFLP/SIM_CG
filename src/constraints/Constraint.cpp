@@ -1,4 +1,6 @@
-#include "constraints/Constraint.h"
+#include "Constraint.h"
+
+#include "GlobalVars.h"
 
 std::vector<Constraint*> Constraint::_constraints;
 
