@@ -445,7 +445,7 @@ int main(int argc, char **argv) {
 
     if (argc == 1) {
         N = 25;
-        dt = 1 / (TARGET_FPS * N);
+        dt = 1.0 / (TARGET_FPS * N);
         d = 5.f;
         fprintf(stderr, "Using defaults : N=%d dt=%g d=%g\n",
                 N, dt, d);
