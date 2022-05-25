@@ -2,6 +2,9 @@
 //
 // #define DEBUG
 // #define STEP
+#define TARGET_FPS 30
+#define TIMESTEPS_PER_FRAME 100
+#define DUMP_FREQUENCY 2
 #include <gfx/geom3d.h>
 #include <GL/glut.h>
 
@@ -119,8 +122,8 @@ static void init_system(void) {
             solver = new MidpointSolver(); break;
         case 4:
             solver = new SympleticMidpointSolver(); break;
-//        case 5:
-//            solver = new RK4Solver(); break;
+       case 5:
+           solver = new RK4Solver(); break;
         default:
             solver = new EulerSolver();
     }
@@ -166,7 +169,7 @@ static void post_display(void) {
         // Write fps to file
         frametime_file << fps << "\n";
 
-        const int FRAME_INTERVAL = 4;
+        const int FRAME_INTERVAL = DUMP_FREQUENCY-1;
         if ((frame_number % FRAME_INTERVAL) == 0) {
             const unsigned int w = glutGet(GLUT_WINDOW_WIDTH);
             const unsigned int h = glutGet(GLUT_WINDOW_HEIGHT);
@@ -282,10 +285,10 @@ static void key_func(unsigned char key, int x, int y) {
             solver_int = 4;
             init_system();
             break;
-//        case '5':
-//            solver_int = 5;
-//            init_system();
-//            break;
+       case '5':
+           solver_int = 5;
+           init_system();
+           break;
 //        case '6':
 //            solver_int = 6;
 //            init_system();
@@ -443,9 +446,8 @@ int main(int argc, char **argv) {
     glutInit(&argc, argv);
 
     if (argc == 1) {
-        // 144 * N * dt = 1
-        N = 25;
-        dt = 1 / (144.0 * N);
+        N = TIMESTEPS_PER_FRAME; 
+        dt = 1.0 / (DUMP_FREQUENCY * TARGET_FPS * N);
         d = 5.f;
         fprintf(stderr, "Using defaults : N=%d dt=%g d=%g\n",
                 N, dt, d);
