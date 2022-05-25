@@ -3,6 +3,8 @@
 // #define DEBUG
 // #define STEP
 #define TARGET_FPS 30
+#define TIMESTEPS_PER_FRAME 100
+#define DUMP_FREQUENCY 2
 #include <gfx/geom3d.h>
 #include <GL/glut.h>
 
@@ -167,7 +169,7 @@ static void post_display(void) {
         // Write fps to file
         frametime_file << fps << "\n";
 
-        const int FRAME_INTERVAL = 4;
+        const int FRAME_INTERVAL = DUMP_FREQUENCY-1;
         if ((frame_number % FRAME_INTERVAL) == 0) {
             const unsigned int w = glutGet(GLUT_WINDOW_WIDTH);
             const unsigned int h = glutGet(GLUT_WINDOW_HEIGHT);
@@ -444,8 +446,8 @@ int main(int argc, char **argv) {
     glutInit(&argc, argv);
 
     if (argc == 1) {
-        N = 25;
-        dt = 1.0 / (TARGET_FPS * N);
+        N = TIMESTEPS_PER_FRAME; 
+        dt = 1.0 / (DUMP_FREQUENCY * TARGET_FPS * N);
         d = 5.f;
         fprintf(stderr, "Using defaults : N=%d dt=%g d=%g\n",
                 N, dt, d);
