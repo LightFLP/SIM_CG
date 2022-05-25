@@ -2,6 +2,7 @@
 //
 // #define DEBUG
 // #define STEP
+#define TARGET_FPS 30
 #include <gfx/geom3d.h>
 #include <GL/glut.h>
 
@@ -119,8 +120,8 @@ static void init_system(void) {
             solver = new MidpointSolver(); break;
         case 4:
             solver = new SympleticMidpointSolver(); break;
-//        case 5:
-//            solver = new RK4Solver(); break;
+       case 5:
+           solver = new RK4Solver(); break;
         default:
             solver = new EulerSolver();
     }
@@ -282,10 +283,10 @@ static void key_func(unsigned char key, int x, int y) {
             solver_int = 4;
             init_system();
             break;
-//        case '5':
-//            solver_int = 5;
-//            init_system();
-//            break;
+       case '5':
+           solver_int = 5;
+           init_system();
+           break;
 //        case '6':
 //            solver_int = 6;
 //            init_system();
@@ -443,9 +444,8 @@ int main(int argc, char **argv) {
     glutInit(&argc, argv);
 
     if (argc == 1) {
-        // 144 * N * dt = 1
         N = 25;
-        dt = 1 / (144.0 * N);
+        dt = 1 / (TARGET_FPS * N);
         d = 5.f;
         fprintf(stderr, "Using defaults : N=%d dt=%g d=%g\n",
                 N, dt, d);
