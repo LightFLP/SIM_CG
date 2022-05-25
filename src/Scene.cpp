@@ -13,6 +13,7 @@
 #include "Constraint.h"
 #include "CircularWireConstraint.h"
 #include "RodConstraint.h"
+#include "RodConstraintV2.h"
 #include "StaticConstraint.h"
 #include "WireConstraint.h"
 
