@@ -28,7 +28,7 @@ double RodConstraint::eval_C(GlobalVars *globals) {
 double RodConstraint::eval_Cdot(GlobalVars *globals) {
     Vec2 v0 = globals->get_vel(iVector[0]);
     Vec2 v1 = globals->get_vel(iVector[1]);
-    return (v0 - v1) * (v0 - v1);
+    return 2 * (p0 - p1) * (v0 - v1);
 }
 
 void RodConstraint::eval_J(GlobalVars *globals, std::vector <MatrixBlock> &blocks) {
@@ -41,8 +41,8 @@ void RodConstraint::eval_J(GlobalVars *globals, std::vector <MatrixBlock> &block
     mb0.data[0] = 2 * (p0[0] - p1[0]);
     mb0.data[1] = 2 * (p0[1] - p1[1]);
     // dC/dp1
-    mb1.data[0] = 2 * (p1[0] - p0[0]);
-    mb1.data[1] = 2 * (p1[1] - p0[1]);
+    mb1.data[0] = - 2 * (p0[0] - p1[0]);
+    mb1.data[1] = - 2 * (p0[1] - p1[1]);
 
     blocks.emplace_back(mb0);
     blocks.emplace_back(mb1);
@@ -58,9 +58,8 @@ void RodConstraint::eval_Jdot(GlobalVars *globals, std::vector <MatrixBlock> &bl
     mb0.data[0] = 2 * (v0[0] - v1[0]);
     mb0.data[1] = 2 * (v0[1] - v1[1]);
 
-    mb1.data[0] = 2 * (v1[0] - v0[0]);
-    mb1.data[1] = 2 * (v1[1] - v0[1]);
-
+    mb1.data[0] = - 2 * (v0[0] - v1[0]);
+    mb1.data[1] = - 2 * (v0[1] - v1[1]);
     blocks.emplace_back(mb0);
     blocks.emplace_back(mb1);
 }

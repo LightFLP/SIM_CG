@@ -9,6 +9,7 @@ class ConstantForce;
 class DragForce;
 class SpringForce;
 class AngularSpringForce;
+class WallRepulsionForce;
 class MouseSpringForce;
 class WindForce;
 
@@ -20,15 +21,15 @@ class WireConstraint;
 
 class Scene {
 public:
-    static void loadDefault(std::vector<Particle *> &pVector, bool *wind, double* dt);
+    static void loadDefault(std::vector<Particle *> &pVector, bool *wind, bool *collision, double* dt);
 
-    static void loadDoubleCircle(std::vector<Particle *> &pVector, bool *wind, double* dt);
+    static void loadDoubleCircle(std::vector<Particle *> &pVector, bool *wind, bool *collision, double* dt);
 
-    static void loadClothStatic(std::vector<Particle *> &pVector, bool *wind, double* dt);
+    static void loadClothStatic(std::vector<Particle *> &pVector, bool *wind, bool *collision, double* dt);
 
-    static void loadClothWire(std::vector<Particle *> &pVector, bool *wind, double* dt);
+    static void loadClothWire(std::vector<Particle *> &pVector, bool *wind, bool *collision, double* dt);
 
-    static void loadHairStatic(std::vector<Particle *> &pVector, bool *wind, double* dt);
+    static void loadHairStatic(std::vector<Particle *> &pVector, bool *wind, bool *collision, double* dt);
 
-    static void loadAngularSpring(std::vector<Particle *> &pVector, bool *wind, double* dt);
+    static void loadAngularSpring(std::vector<Particle *> &pVector, bool *wind, bool *collision, double* dt);
 };

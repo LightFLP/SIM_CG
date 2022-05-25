@@ -63,6 +63,7 @@ static int omx, omy, mx, my;
 static bool show_velocity = false;
 static bool show_force = false;
 static bool blow_wind = false;
+static bool collision = false;
 
 
 /*
@@ -94,19 +95,19 @@ static void init_system(void) {
     // Load new scene
     switch (scene_int) {
         case 1:
-            Scene::loadDefault(pVector, &blow_wind, &dts); break;
+            Scene::loadDefault(pVector, &blow_wind, &collision, &dts); break;
         case 2:
-            Scene::loadDoubleCircle(pVector, &blow_wind, &dts); break;
+            Scene::loadDoubleCircle(pVector, &blow_wind,&collision, &dts); break;
         case 3:
-            Scene::loadClothStatic(pVector, &blow_wind, &dts); break;
+            Scene::loadClothStatic(pVector, &blow_wind,&collision, &dts); break;
         case 4:
-            Scene::loadClothWire(pVector, &blow_wind, &dts); break;
+            Scene::loadClothWire(pVector, &blow_wind,&collision, &dts); break;
         case 5:
-            Scene::loadHairStatic(pVector, &blow_wind, &dts); break;
+            Scene::loadHairStatic(pVector, &blow_wind,&collision, &dts); break;
         case 6:
-            Scene::loadAngularSpring(pVector, &blow_wind, &dts); break;
+            Scene::loadAngularSpring(pVector, &blow_wind,&collision, &dts); break;
         default:
-            Scene::loadDefault(pVector, &blow_wind, &dts);
+            Scene::loadDefault(pVector, &blow_wind,&collision, &dts);
     }
     for (Particle *p: pVector) { p->reset(); }
     // Get list sizes
@@ -267,6 +268,8 @@ static void key_func(unsigned char key, int x, int y) {
             show_force = !show_force; break;
         case 'w':
             blow_wind = !blow_wind; break;
+        case 'c':
+            collision = !collision; break;
 
             // Switch solver
         case '1':
@@ -465,6 +468,7 @@ int main(int argc, char **argv) {
     printf("\t Show the velocities with the 'v' key\n");
     printf("\t Show the forces with the 'b' key\n");
     printf("\t Turn on/off the wind with the 'w' key\n");
+    printf("\t Turn on/off the wall collision with the 'c' key\n");
     printf("\n");
     printf("\t Switch between scenes using the '<' and '>' keys\n");
     printf("\n");

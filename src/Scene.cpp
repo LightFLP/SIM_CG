@@ -7,6 +7,7 @@
 #include "DragForce.h"
 #include "SpringForce.h"
 #include "AngularSpringForce.h"
+#include "WallRepulsionForce.h"
 #include "MouseSpringForce.h"
 #include "WindForce.h"
 
@@ -19,7 +20,7 @@
 
 #define sqrt2 1.41421356237
 
-void Scene::loadDefault(std::vector<Particle*>& pVector, bool *wind, double* dt) {
+void Scene::loadDefault(std::vector<Particle*>& pVector, bool *wind, bool *collision, double* dt) {
     const double dist = 0.2;
     const Vec2 center(0.0, 0.0);
     const Vec2 offset(dist, 0.0);
@@ -34,11 +35,13 @@ void Scene::loadDefault(std::vector<Particle*>& pVector, bool *wind, double* dt)
     Force::_forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
     Force::_forces.push_back(new DragForce(0.0005)); // drag
     Force::_forces.push_back(new WindForce(wind, dt)); // wind
+    Force::_forces.push_back(new WallRepulsionForce(collision, -1, 1)); // wall
 
     for (int i = 0; i < pVector.size(); i++){
         Force::_forces[0]->register_particle(i); // gravity
         Force::_forces[1]->register_particle(i); // drag
         Force::_forces[2]->register_particle(i); // wind
+        Force::_forces[3]->register_particle(i); // wind
     }
 
     Force::_forces.push_back(new SpringForce(0, 1, dist, 50.0, 0.2));
@@ -47,7 +50,7 @@ void Scene::loadDefault(std::vector<Particle*>& pVector, bool *wind, double* dt)
     Constraint::addConstraint(new RodConstraint(1, 2, dist));
 }
 
-void Scene::loadDoubleCircle(std::vector<Particle*>& pVector, bool *wind, double* dt) {
+void Scene::loadDoubleCircle(std::vector<Particle*>& pVector, bool *wind, bool *collision, double* dt) {
     const double dist = 0.2;
     const Vec2 center(0.0, 0.0);
     const Vec2 offset(dist, 0.0);
@@ -73,7 +76,7 @@ void Scene::loadDoubleCircle(std::vector<Particle*>& pVector, bool *wind, double
     Constraint::addConstraint(new RodConstraint(1, 2, dist));
 }
 
-void Scene::loadClothStatic(std::vector<Particle*>& pVector, bool *wind, double* dt) {
+void Scene::loadClothStatic(std::vector<Particle*>& pVector, bool *wind, bool *collision, double* dt) {
 
     const double dist = 0.2;
     const Vec2 center(0.0, 0.0);
@@ -90,11 +93,14 @@ void Scene::loadClothStatic(std::vector<Particle*>& pVector, bool *wind, double*
     Force::_forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
     Force::_forces.push_back(new DragForce(0.0005)); // drag
     Force::_forces.push_back(new WindForce(wind, dt)); // wind
+    Force::_forces.push_back(new WallRepulsionForce(collision, -1, 1)); // wall
+
 
     for (int i = 0; i < pVector.size(); i++){
         Force::_forces[0]->register_particle(i); // gravity
         Force::_forces[1]->register_particle(i); // drag
         Force::_forces[2]->register_particle(i); // wind
+        Force::_forces[3]->register_particle(i); // wall collision
     }
 
     const double kd_structural = 50.0;
@@ -139,7 +145,7 @@ void Scene::loadClothStatic(std::vector<Particle*>& pVector, bool *wind, double*
 }
 
 
-void Scene::loadClothWire(std::vector<Particle*>& pVector, bool *wind, double* dt) {
+void Scene::loadClothWire(std::vector<Particle*>& pVector, bool *wind, bool *collision, double* dt) {
 
     const double dist = 0.05;
     const Vec2 center(0.0, 0.0);
@@ -156,11 +162,13 @@ void Scene::loadClothWire(std::vector<Particle*>& pVector, bool *wind, double* d
     Force::_forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
     Force::_forces.push_back(new DragForce(0.0005)); // drag
     Force::_forces.push_back(new WindForce(wind, dt)); // wind
+    Force::_forces.push_back(new WallRepulsionForce(collision, -1, 1)); // wall
 
     for (int i = 0; i < pVector.size(); i++){
         Force::_forces[0]->register_particle(i); // gravity
         Force::_forces[1]->register_particle(i); // drag
         Force::_forces[2]->register_particle(i); // wind
+        Force::_forces[3]->register_particle(i); // wall collision
     }
 
     const double kd_structural = 50.0;
@@ -205,7 +213,7 @@ void Scene::loadClothWire(std::vector<Particle*>& pVector, bool *wind, double* d
     }
 }
 
-void Scene::loadHairStatic(std::vector<Particle*>& pVector, bool *wind, double* dt) {
+void Scene::loadHairStatic(std::vector<Particle*>& pVector, bool *wind, bool *collision, double* dt) {
 
     const Vec2 center(0.0, 0.0);
 
@@ -222,6 +230,7 @@ void Scene::loadHairStatic(std::vector<Particle*>& pVector, bool *wind, double* 
     Force::_forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
     Force::_forces.push_back(new DragForce(0.0005)); // drag
     Force::_forces.push_back(new WindForce(wind, dt)); // wind
+    Force::_forces.push_back(new WallRepulsionForce(collision, -1, 1)); // wall
 
     //Face particles
     pVector.push_back(new Particle(Vec2(center[0] + 0.1 , center[1] + 0.05)));
@@ -299,10 +308,11 @@ void Scene::loadHairStatic(std::vector<Particle*>& pVector, bool *wind, double* 
         Force::_forces[0]->register_particle(i); // gravity
         Force::_forces[1]->register_particle(i); // drag
         Force::_forces[2]->register_particle(i); // wind
+        Force::_forces[3]->register_particle(i); // wall collision
     }
 }
 
-void Scene::loadAngularSpring(std::vector<Particle*>& pVector, bool *wind, double* dt) {
+void Scene::loadAngularSpring(std::vector<Particle*>& pVector, bool *wind, bool *collision, double* dt) {
     const double dist = 0.2;
 
     const double angle = 45;
@@ -326,13 +336,15 @@ void Scene::loadAngularSpring(std::vector<Particle*>& pVector, bool *wind, doubl
     //forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
     //forces.push_back(new DragForce(0.0005)); // drag
     Force::_forces.push_back(new WindForce(wind, dt)); // wind
+    Force::_forces.push_back(new WallRepulsionForce(collision, -1, 1)); // wall
     Force::_forces.push_back(new AngularSpringForce(0, 1, 2, angle , ks_angular, kd_angular)); // angular spring
 
     for (int i = 0; i < pVector.size(); i++){
 //        forces[0]->register_particle(i); // gravity
 //        forces[1]->register_particle(i); // drag
         Force::_forces[2]->register_particle(i); // wind
-        Force::_forces[3]->register_particle(i); // angular spring force
+        Force::_forces[3]->register_particle(i); // wall collision
+        Force::_forces[4]->register_particle(i); // angular spring force
     }
 
     Force::_forces.push_back(new SpringForce(0, 1, dist, ks_structural, kd_structural));
