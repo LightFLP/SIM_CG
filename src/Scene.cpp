@@ -93,14 +93,14 @@ void Scene::loadClothStatic(std::vector<Particle*>& pVector, bool *wind, bool *c
     Force::_forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
     Force::_forces.push_back(new DragForce(0.0005)); // drag
     Force::_forces.push_back(new WindForce(wind, dt)); // wind
-    Force::_forces.push_back(new WallRepulsionForce(collision, -1, 1)); // wall
+    WallRepulsionForce* wall_collision = new WallRepulsionForce(collision, -1, 1);
 
 
     for (int i = 0; i < pVector.size(); i++){
         Force::_forces[0]->register_particle(i); // gravity
         Force::_forces[1]->register_particle(i); // drag
         Force::_forces[2]->register_particle(i); // wind
-        Force::_forces[3]->register_particle(i); // wall collision
+        wall_collision->register_particle(i); // wall collision
     }
 
     const double kd_structural = 50.0;
@@ -138,6 +138,8 @@ void Scene::loadClothStatic(std::vector<Particle*>& pVector, bool *wind, bool *c
             }
         }
     }
+
+    Force::_forces.push_back(wall_collision);
 
     // Hanging points
     Constraint::addConstraint(new StaticConstraint(0, pVector[0]->m_ConstructPos));
@@ -150,7 +152,7 @@ void Scene::loadClothWire(std::vector<Particle*>& pVector, bool *wind, bool *col
     const double dist = 0.05;
     const Vec2 center(0.0, 0.0);
 
-    const int N = 32;
+    const int N = 8;
     const double offset = N * dist / 2.0;
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
@@ -162,13 +164,13 @@ void Scene::loadClothWire(std::vector<Particle*>& pVector, bool *wind, bool *col
     Force::_forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
     Force::_forces.push_back(new DragForce(0.0005)); // drag
     Force::_forces.push_back(new WindForce(wind, dt)); // wind
-    Force::_forces.push_back(new WallRepulsionForce(collision, -1, 1)); // wall
+    WallRepulsionForce* wall_collision = new WallRepulsionForce(collision, -1, 1);
 
     for (int i = 0; i < pVector.size(); i++){
         Force::_forces[0]->register_particle(i); // gravity
         Force::_forces[1]->register_particle(i); // drag
         Force::_forces[2]->register_particle(i); // wind
-        Force::_forces[3]->register_particle(i); // wall collision
+        wall_collision->register_particle(i); // wall collision
     }
 
     const double kd_structural = 50.0;
@@ -206,6 +208,7 @@ void Scene::loadClothWire(std::vector<Particle*>& pVector, bool *wind, bool *col
             }
         }
     }
+    Force::_forces.push_back(wall_collision); // wall
 
     // Wire
     for (int i = 0; i < N; i++) {
