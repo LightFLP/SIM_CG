@@ -22,13 +22,9 @@ public:
                 if(p0[0] >= m_rBoundary-epsilon){
                     globals->x[2 * i] = m_rBoundary - 2*epsilon;
                     globals->v[2 * i] = -damping*(abs(globals->v[2 * i]));
-                    globals->Q[2 * i] = 0;
-                    //globals->Q[2 * i + 1] += m_constant[1] / globals->W[2 * i + 1];
                 }else if(p0[0] <= m_lBoundary + epsilon){
                     globals->x[2 * i] = m_lBoundary + 2*epsilon;
                     globals->v[2 * i] = damping*(abs(globals->v[2 * i]));
-                    globals->Q[2 * i] = 0;
-                    //globals->Q[2 * i + 1] += m_constant[1] / globals->W[2 * i + 1];
                 }
             }
         }
