@@ -2,6 +2,7 @@
 //
 // #define DEBUG
 // #define STEP
+#define RECORD
 #define TARGET_FPS 30
 #define TIMESTEPS_PER_FRAME 100
 #define DUMP_FREQUENCY 2
@@ -13,6 +14,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
+#include <numeric>
 
 #include "Particle.h"
 #include "imageio.h"
@@ -24,6 +26,7 @@
 #include "Constraint.h"
 #include "Simulator.h"
 #include "MouseSpringForce.h"
+#include "Recorder.h"
 
 /* macros */
 
@@ -40,9 +43,13 @@ static int last_time;
 static int dt_since_start = 0;
 static float fps = 0.0f;
 static double dts;
+static std::vector<int> timings;
+static int iters;
 
 static int filesystem_opened;
 static std::ofstream frametime_file;
+
+static Recorder *recorder;
 
 static State *state;
 
@@ -253,7 +260,9 @@ static void key_func(unsigned char key, int x, int y) {
 
             // Quit
         case 'q':
-        case 'Q':free_data();
+        case 'Q':
+            recorder->close();
+            free_data();
             exit(0);
             break;
 
@@ -292,10 +301,6 @@ static void key_func(unsigned char key, int x, int y) {
            solver_int = 5;
            init_system();
            break;
-//        case '6':
-//            solver_int = 6;
-//            init_system();
-//            break;
 
             // Switch scene
         case '.':
@@ -376,12 +381,59 @@ static void mouse_interact() {
 }
 
 static void idle_func(void) {
+#ifdef RECORD
+    // record all solvers for each scene
+//    if (recorder->stop()) {
+//        if (scene_int > 6) {
+//            recorder->close();
+//            free_data();
+//            exit(0);
+//        } else {
+//            if (solver_int > 5) {
+//                solver_int = 0;
+//                scene_int++;
+//            } else {
+//                solver_int++;
+//            }
+//            init_system();
+//        }
+//    }
+
+    // record the current scene twice
+    if (recorder->stop()) {
+        if (iters > 2) {
+            recorder->close();
+            free_data();
+            exit(0);
+        }
+        iters++;
+        init_system();
+    }
+
+    if (dsim) {
+        if (recorder->reset()) {
+            auto const count = static_cast<float>(timings.size());
+            float avg = std::accumulate(timings.begin(), timings.end(), 0.0) / count;
+            recorder->write(std::to_string(avg));
+            timings.empty();
+            init_system();
+        }
+        int then = glutGet(GLUT_ELAPSED_TIME);
+
+        for (int i = 0; i < N; i++) {
+            dt_since_start++;
+            state->advance(dt);
+        }
+
+        int now = glutGet(GLUT_ELAPSED_TIME);
+        timings.push_back(now - then);
+
+        state->copy_to_particles(pVector);
+    }
+#else
     if (dsim) {
         for (int i = 0; i < N; i++) {
             dt_since_start++;
-#ifdef DEBUG
-            printf("Iteration %i\n", i);
-#endif
             state->advance(dt);
         }
         state->copy_to_particles(pVector);
@@ -390,6 +442,7 @@ static void idle_func(void) {
 #endif
         mouse_interact();
     }
+#endif
 
     glutSetWindow(win_id);
     glutPostRedisplay();
@@ -449,7 +502,7 @@ int main(int argc, char **argv) {
     glutInit(&argc, argv);
 
     if (argc == 1) {
-        N = TIMESTEPS_PER_FRAME; 
+        N = TIMESTEPS_PER_FRAME;
         dt = 1.0 / (DUMP_FREQUENCY * TARGET_FPS * N);
         d = 5.f;
         fprintf(stderr, "Using defaults : N=%d dt=%g d=%g\n",
@@ -477,8 +530,11 @@ int main(int argc, char **argv) {
     printf("\t Switch the solver to Midpoint with the '3' key\n");
     printf("\t Switch the solver to Sympletic Midpoint with the '4' key\n");
     printf("\t Switch the solver to Runge-Kutta with the '5' key\n");
-    printf("\t Switch the solver to Simpletic Runge-Kutta with the '6' key\n");
 
+#ifdef RECORD
+    recorder = new Recorder(&dt, 0.04, 20);
+    recorder->start();
+#endif
 
     dsim = 0;
     dump_frames = 0;
