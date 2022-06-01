@@ -27,6 +27,7 @@
 #include "Simulator.h"
 #include "MouseSpringForce.h"
 #include "Recorder.h"
+#include "GlobalVars.h"
 
 /* macros */
 
@@ -98,6 +99,10 @@ static void init_system(void) {
     Force::_forces.clear();
     Force::_mouse_forces.clear();
     Constraint::_constraints.clear();
+
+    // Clear timestep
+    dt_since_start = 0;
+    dts = 0;
 
     // Load new scene
     switch (scene_int) {
@@ -400,36 +405,65 @@ static void idle_func(void) {
 //    }
 
     // record the current scene twice
+//    if (recorder->stop()) {
+//        if (iters > 2) {
+//            recorder->close();
+//            free_data();
+//            exit(0);
+//        }
+//        iters++;
+//        init_system();
+//    }
+
+    // record the current scene once
     if (recorder->stop()) {
-        if (iters > 2) {
-            recorder->close();
-            free_data();
-            exit(0);
-        }
-        iters++;
-        init_system();
+        recorder->close();
+        free_data();
+        exit(0);
     }
 
+    // record the global state (position and velocity) per frame
     if (dsim) {
         if (recorder->reset()) {
-            auto const count = static_cast<float>(timings.size());
-            float avg = std::accumulate(timings.begin(), timings.end(), 0.0) / count;
-            recorder->write(std::to_string(avg));
-            timings.empty();
+            recorder->write("");
             init_system();
         }
-        int then = glutGet(GLUT_ELAPSED_TIME);
 
         for (int i = 0; i < N; i++) {
             dt_since_start++;
             state->advance(dt);
         }
 
-        int now = glutGet(GLUT_ELAPSED_TIME);
-        timings.push_back(now - then);
+        std::string out = std::to_string(dts) + " ";
+        for (int i = 0; i < state->globals->n; i++) {
+            out += std::to_string(state->globals->x[i]) + " " + std::to_string(state->globals->v[i]) + " ";
+        }
+        recorder->write(out);
 
         state->copy_to_particles(pVector);
     }
+
+    // record the avg run time of the advance
+//    if (dsim) {
+//        if (recorder->reset()) {
+//            auto const count = static_cast<float>(timings.size());
+//            float avg = std::accumulate(timings.begin(), timings.end(), 0.0) / count;
+//            recorder->write(std::to_string(avg));
+//            timings.empty();
+//            init_system();
+//        }
+//        int then = glutGet(GLUT_ELAPSED_TIME);
+//
+//        for (int i = 0; i < N; i++) {
+//            dt_since_start++;
+//            state->advance(dt);
+//        }
+//
+//        int now = glutGet(GLUT_ELAPSED_TIME);
+//        timings.push_back(now - then);
+//
+//        state->copy_to_particles(pVector);
+//    }
 #else
     if (dsim) {
         for (int i = 0; i < N; i++) {
