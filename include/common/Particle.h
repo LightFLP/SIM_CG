@@ -2,6 +2,8 @@
 
 #include <gfx/vec2.h>
 
+#include <vector>
+
 class Particle {
 public:
     Particle(const Vec2 &ConstructPos);
@@ -20,4 +22,8 @@ public:
 
     Vec2 m_ForceAccum;
     const float m_Mass;
+
+    static std::vector<Particle *> _particles;
+
+    static void AddParticle(Particle *particle);
 };

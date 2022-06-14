@@ -18,6 +18,8 @@
 #include "StaticConstraint.h"
 #include "WireConstraint.h"
 
+#include "rigid_body.h"
+
 #define sqrt2 1.41421356237
 
 void Scene::loadDefault(std::vector<Particle*>& pVector, bool *wind, bool *collision, double* dt) {
@@ -31,6 +33,7 @@ void Scene::loadDefault(std::vector<Particle*>& pVector, bool *wind, bool *colli
     pVector.push_back(new Particle(center + offset));
     pVector.push_back(new Particle(center + offset + offset ));
     pVector.push_back(new Particle(center + offset + offset + offset ));
+    RigidBody::_rigid_indices.resize(3);
 
     Force::_forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
     Force::_forces.push_back(new DragForce(0.0005)); // drag
@@ -48,6 +51,8 @@ void Scene::loadDefault(std::vector<Particle*>& pVector, bool *wind, bool *colli
 
     Constraint::addConstraint(new CircularWireConstraint(0, center, dist));
     Constraint::addConstraint(new RodConstraint(1, 2, dist));
+
+    RigidBody::AddRigidBody(new RigidBody(Vec2(0,0), Vec2(8, 3), 4.f));
 }
 
 void Scene::loadDoubleCircle(std::vector<Particle*>& pVector, bool *wind, bool *collision, double* dt) {

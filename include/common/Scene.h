@@ -18,6 +18,7 @@ class CircularWireConstraint;
 class RodConstraint;
 class StaticConstraint;
 class WireConstraint;
+class RigidBody;
 
 class Scene {
 public:

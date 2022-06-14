@@ -5,6 +5,12 @@
 #define VIS_MULT_VEL 0.1
 #define VIS_MULT_FOR 0.01
 
+std::vector<Particle *> Particle::_particles;
+
+void Particle::AddParticle(Particle *particle) {
+    Particle::_particles.emplace_back(particle);
+}
+
 Particle::Particle(const Vec2 &ConstructPos, const float mass) :
         m_ConstructPos(ConstructPos), m_Position(Vec2(0.0, 0.0)), m_Velocity(Vec2(0.0, 0.0)), m_Mass(mass) {
 }

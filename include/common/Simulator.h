@@ -31,7 +31,7 @@ class State {
     double alpha = 0;
     double beta = 0;
 
-    void setup_globals(std::vector<Particle *> &particles);
+    void setup_globals();
 
 public:
     GlobalVars *globals;
@@ -40,9 +40,9 @@ public:
 
     State(State *other, Solver *solver = nullptr);
 
-    State(Solver *_solver, int _n, int _m, std::vector<Particle *> &particles);
+    State(Solver *_solver, int _n, int _m);
 
-    void reset(std::vector<Particle *> &particles);
+    void reset();
 
     ~State() {
         free(globals);
@@ -55,6 +55,6 @@ public:
 
     void advance(double dt);
 
-    void copy_to_particles(std::vector<Particle *> &particles);
+    void copy_to_particles();
 };
 

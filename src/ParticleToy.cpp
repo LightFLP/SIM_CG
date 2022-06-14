@@ -24,6 +24,7 @@
 #include "Constraint.h"
 #include "Simulator.h"
 #include "MouseSpringForce.h"
+#include "rigid_body.h"
 
 /* macros */
 
@@ -46,7 +47,6 @@ static std::ofstream frametime_file;
 
 static State *state;
 
-static std::vector<Particle *> pVector;
 static Particle *mouse_particle;
 static int particle_selected = false;
 static int scene_int = 1;
@@ -73,7 +73,7 @@ free/clear/allocate simulation data
 */
 
 static void free_data(void) {
-    pVector.clear();
+    Particle::_particles.clear();
 }
 
 // number of constraints
@@ -87,7 +87,7 @@ static void init_system(void) {
     dsim = true;
 
     // Clear all lists
-    pVector.clear();
+    Particle::_particles.clear();
     Force::_forces.clear();
     Force::_mouse_forces.clear();
     Constraint::_constraints.clear();
@@ -95,24 +95,24 @@ static void init_system(void) {
     // Load new scene
     switch (scene_int) {
         case 1:
-            Scene::loadDefault(pVector, &blow_wind, &collision, &dts); break;
+            Scene::loadDefault(Particle::_particles, &blow_wind, &collision, &dts); break;
         case 2:
-            Scene::loadDoubleCircle(pVector, &blow_wind,&collision, &dts); break;
+            Scene::loadDoubleCircle(Particle::_particles, &blow_wind,&collision, &dts); break;
         case 3:
-            Scene::loadClothStatic(pVector, &blow_wind,&collision, &dts); break;
+            Scene::loadClothStatic(Particle::_particles, &blow_wind,&collision, &dts); break;
         case 4:
-            Scene::loadClothWire(pVector, &blow_wind,&collision, &dts); break;
+            Scene::loadClothWire(Particle::_particles, &blow_wind,&collision, &dts); break;
         case 5:
-            Scene::loadHairStatic(pVector, &blow_wind,&collision, &dts); break;
+            Scene::loadHairStatic(Particle::_particles, &blow_wind,&collision, &dts); break;
         case 6:
-            Scene::loadAngularSpring(pVector, &blow_wind,&collision, &dts); break;
+            Scene::loadAngularSpring(Particle::_particles, &blow_wind,&collision, &dts); break;
         default:
-            Scene::loadDefault(pVector, &blow_wind,&collision, &dts);
+            Scene::loadDefault(Particle::_particles, &blow_wind,&collision, &dts);
     }
-    for (Particle *p: pVector) { p->reset(); }
+    for (Particle *p: Particle::_particles) { p->reset(); }
     // Get list sizes
     m = Constraint::_constraints.size();
-    n = pVector.size();
+    n = Particle::_particles.size();
 
     switch (solver_int) {
         case 1:
@@ -128,7 +128,7 @@ static void init_system(void) {
         default:
             solver = new EulerSolver();
     }
-    state = new State(solver, n, m, pVector);
+    state = new State(solver, n, m);
 
 #ifdef DEBUG
     printf("init: n=%i m=%i\n", n, m);
@@ -195,9 +195,8 @@ static void post_display(void) {
 }
 
 static void draw_particles(void) {
-
-    for (int ii = 0; ii < n; ii++) {
-        pVector[ii]->draw(show_velocity, show_force);
+    for (Particle *p: Particle::_particles) {
+        p->draw(show_velocity, show_force);
     }
 }
 
@@ -244,9 +243,9 @@ static void key_func(unsigned char key, int x, int y) {
         case 'r':
         case 'R':
             dsim = false;
-            for (Particle *p: pVector) { p->reset(); }
+            for (Particle *p: Particle::_particles) { p->reset(); }
             dt_since_start = 0;
-            state->reset(pVector);
+            state->reset();
             for (Constraint *c: Constraint::_constraints) { c->eval_C(state->globals); }
             for (Force *f: Force::_forces) { f->calculate_forces(state->globals); }
             break;
@@ -307,6 +306,11 @@ static void key_func(unsigned char key, int x, int y) {
             scene_int -= scene_int == 1 ? 0 : 1;
             init_system();
             break;
+
+        case 'k':
+            RigidBody::AddRigidBody(new RigidBody(Vec2(0,0), Vec2(2, 2), 4.f));
+            init_system();
+            break;
     }
 }
 
@@ -357,7 +361,7 @@ static void mouse_interact() {
         Vec2 min = {q - h, r - h};
         Vec2 max = {q + h, r + h};
         int i = 0;
-        for (Particle *p: pVector) {
+        for (Particle *p: Particle::_particles) {
             if (is_inside_bbox(p->m_Position, min, max)) {
                 float dist = sqrt(pow(mouse_particle->m_Position[0] - p->m_Position[0], 2) +
                                   pow(mouse_particle->m_Position[1] - p->m_Position[1], 2));
@@ -384,7 +388,7 @@ static void idle_func(void) {
 #endif
             state->advance(dt);
         }
-        state->copy_to_particles(pVector);
+        state->copy_to_particles();
 #ifdef STEP
         dsim = false;
 #endif

@@ -31,9 +31,9 @@ State::State(State *other, Solver *_solver) {
     setup_calc_mem();
 }
 
-void State::setup_globals(std::vector<Particle *> &particles) {
+void State::setup_globals() {
     int i = 0;
-    for (Particle *p: particles) {
+    for (Particle *p: Particle::_particles) {
         globals->x[i] = p->m_Position[0];
         globals->v[i] = p->m_Velocity[0];
         globals->W[i] = 1 / p->m_Mass;
@@ -51,16 +51,16 @@ void State::setup_globals(std::vector<Particle *> &particles) {
     }
 }
 
-void State::reset(std::vector<Particle *> &particles) {
+void State::reset() {
     memset(globals->data, 0.0, 8 * n + 2 * m);
-    setup_globals(particles);
+    setup_globals();
 }
 
-State::State(Solver *_solver, int _n, int _m, std::vector<Particle *> &particles) : n(_n), m(_m) {
+State::State(Solver *_solver, int _n, int _m) : n(_n), m(_m) {
     solver = _solver;
     globals = new GlobalVars(n, m);
 
-    setup_globals(particles);
+    setup_globals();
     setup_calc_mem();
 }
 
@@ -214,10 +214,10 @@ void State::advance(double dt) {
     solver->simulation_step(this, dt);
 }
 
-void State::copy_to_particles(std::vector<Particle *> &particles) {
+void State::copy_to_particles() {
     Particle *p;
     for (int i = 0; i < n; i++) {
-        p = particles[i];
+        p = Particle::_particles[i];
         p->m_Position[0] = globals->x[2 * i];
         p->m_Position[1] = globals->x[2 * i + 1];
         // Technically we only need position I think

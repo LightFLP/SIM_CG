@@ -1,6 +1,8 @@
 #pragma once
 
 class State;
+class RigidBody;
+class Particle;
 
 class Solver {
 public:
