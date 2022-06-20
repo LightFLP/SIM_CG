@@ -25,6 +25,28 @@ void MidpointSolver::simulation_step(State *state, double dt) {
         state->globals->x[i] += dt * midpoint_state->globals->v[i];
         state->globals->v[i] += dt * midpoint_state->globals->Q[i];
     }
+
+    double *new_state = (double *) malloc(sizeof(double) * RigidBody::STATE_SIZE);
+    double *old_state = (double *) malloc(sizeof(double) * RigidBody::STATE_SIZE);
+    double *deriv = (double *) malloc(sizeof(double) * RigidBody::STATE_SIZE);
+
+    for (RigidBody *r : RigidBody::_bodies) {
+        old_state = r->getState();
+        deriv = r->getDerivState();
+
+        for (int i = 0; i < RigidBody::STATE_SIZE; i++) {
+            new_state[i] = old_state[i] + deriv[i] * dt * 0.5;
+        }
+        r->setState(new_state);
+
+        deriv = r->getDerivState();
+
+        for (int i = 0; i < RigidBody::STATE_SIZE; i++) {
+            new_state[i] = old_state[i] + deriv[i] * dt;
+        }
+
+        r->setState(new_state);
+    }
 }
 
 SympleticMidpointSolver::SympleticMidpointSolver(Solver *_solver) {
@@ -47,5 +69,27 @@ void SympleticMidpointSolver::simulation_step(State *state, double dt) {
     for (int i = 0; i < 2 * state->globals->n; i++) {
         state->globals->v[i] += dt * midpoint_state->globals->Q[i];
         state->globals->x[i] += dt * state->globals->v[i];
+    }
+
+    double *new_state = (double *) malloc(sizeof(double) * RigidBody::STATE_SIZE);
+    double *old_state = (double *) malloc(sizeof(double) * RigidBody::STATE_SIZE);
+    double *deriv = (double *) malloc(sizeof(double) * RigidBody::STATE_SIZE);
+
+    for (RigidBody *r : RigidBody::_bodies) {
+        old_state = r->getState();
+        deriv = r->getDerivState();
+
+        for (int i = 0; i < RigidBody::STATE_SIZE; i++) {
+            new_state[i] = old_state[i] + deriv[i] * dt * 0.5;
+        }
+        r->setState(new_state);
+
+        deriv = r->getDerivState();
+
+        for (int i = 0; i < RigidBody::STATE_SIZE; i++) {
+            new_state[i] = old_state[i] + deriv[i] * dt;
+        }
+
+        r->setState(new_state);
     }
 }

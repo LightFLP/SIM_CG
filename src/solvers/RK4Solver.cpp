@@ -30,6 +30,49 @@ void RK4Solver::simulation_step( State* state, double dt ){
         state->globals->x[i] += ONE_SIXTH * (state->globals->v[i] + 2*state_k2->globals->v[i] + 2*state_k3->globals->v[i] + state_k4->globals->v[i]) * dt;
         state->globals->v[i] += ONE_SIXTH * (state->globals->Q[i] + 2*state_k2->globals->Q[i] + 2*state_k3->globals->Q[i] + state_k4->globals->Q[i]) * dt;
     }
-    
 
+    double *new_state = (double *) malloc(sizeof(double) * RigidBody::STATE_SIZE);
+    double *old_state = (double *) malloc(sizeof(double) * RigidBody::STATE_SIZE);
+    double *deriv = (double *) malloc(sizeof(double) * RigidBody::STATE_SIZE);
+
+    double *k1 = (double *) malloc(sizeof(double) * RigidBody::STATE_SIZE);
+    double *k2 = (double *) malloc(sizeof(double) * RigidBody::STATE_SIZE);
+    double *k3 = (double *) malloc(sizeof(double) * RigidBody::STATE_SIZE);
+    double *k4 = (double *) malloc(sizeof(double) * RigidBody::STATE_SIZE);
+
+    for (RigidBody *r : RigidBody::_bodies) {
+        old_state = r->getState();
+
+        // k1
+        deriv = r->getDerivState();
+        for (int i = 0; i < RigidBody::STATE_SIZE; i++) {
+            k1[i] = old_state[i] + deriv[i] * dt * 0.5;
+        }
+        r->setState(new_state);
+
+        // k2
+        deriv = r->getDerivState();
+        for (int i = 0; i < RigidBody::STATE_SIZE; i++) {
+            k2[i] = old_state[i] + deriv[i] * dt * 0.5;
+        }
+        r->setState(new_state);
+
+        // k3
+        deriv = r->getDerivState();
+        for (int i = 0; i < RigidBody::STATE_SIZE; i++) {
+            k3[i] = old_state[i] + deriv[i] * dt;
+        }
+        r->setState(new_state);
+
+        // k4
+        deriv = r->getDerivState();
+        for (int i = 0; i < RigidBody::STATE_SIZE; i++) {
+            k4[i] = old_state[i] + deriv[i] * dt;
+        }
+
+        for (int i = 0; i < RigidBody::STATE_SIZE; i++) {
+            new_state[i] = ONE_SIXTH * (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]);
+        }
+        r->setState(new_state);
+    }
 }

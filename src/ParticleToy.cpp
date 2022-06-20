@@ -110,9 +110,17 @@ static void init_system(void) {
             Scene::loadDefault(Particle::_particles, &blow_wind,&collision, &dts);
     }
     for (Particle *p: Particle::_particles) { p->reset(); }
+
     // Get list sizes
     m = Constraint::_constraints.size();
-    n = Particle::_particles.size();
+
+    // subtract the rigid body particles from the main particle loop,
+    // so we have more control over them
+    int n_min = 0;
+    for (RigidBody *r : RigidBody::_bodies) {
+        n_min += r->indices.size();
+    }
+    n = Particle::_particles.size() - n_min;
 
     switch (solver_int) {
         case 1:
