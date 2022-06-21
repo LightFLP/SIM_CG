@@ -357,3 +357,40 @@ void Scene::loadAngularSpring(std::vector<Particle*>& pVector, bool *wind, bool 
     Constraint::addConstraint(new StaticConstraint(0, pVector[0]->m_ConstructPos));
 }
 
+//void Scene::FluidCloth(std::vector<Particle*>& pVector, bool *wind, bool *collision, double* dt) {
+//    const double dist = 0.2;
+//    const Vec2 center(0.0, 0.0);
+//    const Vec2 offset(dist, 0.0);
+//
+//    // Create three particles, attach them to each other, then add a
+//    // circular wire constraint to the first.
+//
+//    pVector.push_back(new Particle(center + offset));
+//    pVector.push_back(new Particle(center + offset + offset ));
+//    pVector.push_back(new Particle(center + offset + offset + offset ));
+//
+//    Force::_forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
+//    Force::_forces.push_back(new DragForce(0.0005)); // drag
+//    Force::_forces.push_back(new WindForce(wind, dt)); // wind
+//    Force::_forces.push_back(new WallRepulsionForce(collision, -1, 1)); // wall
+//
+//    for (int i = 0; i < pVector.size(); i++){
+//        Force::_forces[0]->register_particle(i); // gravity
+//        Force::_forces[1]->register_particle(i); // drag
+//        Force::_forces[2]->register_particle(i); // wind
+//        Force::_forces[3]->register_particle(i); // wind
+//    }
+//
+//    Force::_forces.push_back(new SpringForce(0, 1, dist, 50.0, 0.2));
+//
+//    Constraint::addConstraint(new CircularWireConstraint(0, center, dist));
+//    Constraint::addConstraint(new RodConstraint(1, 2, dist));
+//
+// /*
+//    -------------------------------------------------------------------
+//    Fluid simulation
+//    -------------------------------------------------------------------
+//*/
+//
+//}
+

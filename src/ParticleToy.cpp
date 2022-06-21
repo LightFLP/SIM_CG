@@ -5,6 +5,7 @@
 #define TARGET_FPS 30
 #define TIMESTEPS_PER_FRAME 100
 #define DUMP_FREQUENCY 2
+#define IX(i,j) ((i)+(N_f+2)*(j)) // fluid
 #include <gfx/geom3d.h>
 #include <GL/glut.h>
 
@@ -63,7 +64,30 @@ static int omx, omy, mx, my;
 static bool show_velocity = false;
 static bool show_force = false;
 static bool blow_wind = false;
+static bool fluid_interaction = false;
 static bool collision = false;
+
+/* fluid global variables */
+
+/* external definitions (from solver.c) */
+
+extern void dens_step ( int N, float * x, float * x0, float * u, float * v, float diff, float dt, bool * solid);
+extern void vel_step ( int N, float * u, float * v, float * u0, float * v0, float visc, float dt, bool * solid );
+
+static int N_f;
+static float dt_f, diff, visc;
+static float force, source;
+static int dvel;
+
+static float * u, * v, * u_prev, * v_prev;
+static float * dens, * dens_prev;
+static bool * solid;
+static bool removeSolid;
+
+//static int win_id;
+//static int win_x, win_y;
+//static int mouse_down[3];
+//static int omx_f, omy_f, mx_f, my_f;
 
 
 /*
@@ -74,6 +98,45 @@ free/clear/allocate simulation data
 
 static void free_data(void) {
     pVector.clear();
+
+    // fluid
+    if ( u ) free ( u );
+    if ( v ) free ( v );
+    if ( u_prev ) free ( u_prev );
+    if ( v_prev ) free ( v_prev );
+    if ( dens ) free ( dens );
+    if ( dens_prev ) free ( dens_prev );
+    if ( solid ) free ( solid );
+}
+
+static void clear_data_fluid ( void )
+{
+    int i, size=(N_f+2)*(N_f+2);
+
+    for ( i=0 ; i<size ; i++ ) {
+        u[i] = v[i] = u_prev[i] = v_prev[i] = dens[i] = dens_prev[i] = 0.0f;
+        solid[i] = false;
+    }
+}
+
+static int allocate_data_fluid ( void )
+{
+    int size = (N_f+2)*(N_f+2);
+
+    u			= (float *) malloc ( size*sizeof(float) );
+    v			= (float *) malloc ( size*sizeof(float) );
+    u_prev		= (float *) malloc ( size*sizeof(float) );
+    v_prev		= (float *) malloc ( size*sizeof(float) );
+    dens		= (float *) malloc ( size*sizeof(float) );
+    dens_prev	= (float *) malloc ( size*sizeof(float) );
+    solid		= (bool *)  malloc ( size*sizeof(bool) );
+
+    if ( !u || !v || !u_prev || !v_prev || !dens || !dens_prev ) {
+        fprintf ( stderr, "cannot allocate data\n" );
+        return ( 0 );
+    }
+
+    return ( 1 );
 }
 
 // number of constraints
@@ -145,7 +208,7 @@ static void pre_display(void) {
     glViewport(0, 0, win_x, win_y);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluOrtho2D(-1.0, 1.0, -1.0, 1.0);
+    gluOrtho2D(-1.0, 1.0, -1.0, 1.0); //fluid different
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 }
@@ -200,6 +263,96 @@ static void draw_particles(void) {
         pVector[ii]->draw(show_velocity, show_force);
     }
 }
+
+static void draw_velocity_fluid ( void )
+{
+    int i, j;
+    float x, y, h;
+
+    h = 1.0f/N_f;
+
+    glColor3f ( 1.0f, 1.0f, 1.0f );
+    glLineWidth ( 1.0f );
+
+    glBegin ( GL_LINES );
+
+    for ( i=1 ; i<=N_f*2 ; i++ ) {
+        x = i*h;
+        x = x*2 -1;
+
+        for ( j=1 ; j<=N_f*2 ; j++ ) {
+            y = j*h;
+            y = y*2 -1;
+
+            glVertex2f ( x, y );
+            glVertex2f ( x+u[IX(i,j)], y+v[IX(i,j)] );
+        }
+    }
+
+    glEnd ();
+}
+
+// https://www.shadertoy.com/view/ll2GD3
+static void set_color_fluid(float dens)
+{
+    dens = 1-dens;
+    dens *= .85f;
+    const float magic = 6.28318f;
+    glColor3f(
+            .5f + .5f * cosf(magic * (dens + .00f)),
+            .5f + .5f * cosf(magic * (dens + .33f)),
+            .5f + .5f * cosf(magic * (dens + .67f))
+    );
+}
+
+static void draw_density_fluid ( void )
+{
+    int i, j;
+    float x, y, h, d00, d01, d10, d11;
+
+    h = 1.0f/N_f;
+
+    glBegin ( GL_QUADS );
+
+    for ( i=0 ; i<=N_f ; i++ ) {
+        x = i*h;
+        x = x*2 -1;
+        for ( j=0 ; j<=N_f*2 ; j++ ) {
+            y = j*h;
+            y = y*2 -1;
+
+            d00 = dens[IX(i,j)];
+            d01 = dens[IX(i,j+1)];
+            d10 = dens[IX(i+1,j)];
+            d11 = dens[IX(i+1,j+1)];
+
+            set_color_fluid ( d00 ); glVertex2f ( x, y );
+            set_color_fluid ( d10 ); glVertex2f ( x+h*2, y );
+            set_color_fluid ( d11 ); glVertex2f ( x+h*2, y+h*2 );
+            set_color_fluid ( d01 ); glVertex2f ( x, y+h*2 );
+        }
+    }
+
+
+
+    for ( i=1 ; i<N_f+2 ; i++ ) {
+        x = i*h;
+        x = x*2 -1;
+        for ( j=1 ; j<N_f+2 ; j++ ) {
+            y = j*h;
+            y = y*2 -1;
+            if (solid[IX(i,j)]) {
+                glColor3f ( 0.0f, 0.0f, 0.0f );
+                glVertex2f ( x, y );
+                glVertex2f ( x+h*2, y );
+                glVertex2f ( x+h*2, y+h*2 );
+                glVertex2f ( x, y+h*2 );
+            }
+        }
+    }
+    glEnd ();
+}
+
 
 static void draw_forces(void) {
     for (Force *f: Force::_forces) {
@@ -261,15 +414,49 @@ static void key_func(unsigned char key, int x, int y) {
         case ' ':
             dsim = !dsim; break;
 
+            // Toggle fluid controls
+        case  'f':
+        case  'F':
+            fluid_interaction = !fluid_interaction;
+
+            if(fluid_interaction){
+                printf ( "\t Fluid controls toggled ON\n" );
+            }else{
+                printf ( "\t Fluid controls toggled OFF\n" );
+            }
+            break;
+
+            // Toggle solid bodies add and remove
+        case 'p':
+        case 'P':
+            if(fluid_interaction){
+                removeSolid = !removeSolid;
+            }
+            break;
+
             // Toggle draw functions
         case 'v':
-            show_velocity = !show_velocity; break;
+        case 'V':
+            if(!fluid_interaction){
+                show_velocity = !show_velocity;
+            }else{
+                dvel = !dvel;
+            }
+            break;
         case 'b':
+        case 'B':
             show_force = !show_force; break;
         case 'w':
+        case 'W':
             blow_wind = !blow_wind; break;
         case 'c':
-            collision = !collision; break;
+        case 'C':
+            if(!fluid_interaction){
+                collision = !collision;
+            }else{
+                clear_data_fluid();
+            }
+            break;
 
             // Switch solver
         case '1':
@@ -375,6 +562,45 @@ static void mouse_interact() {
     }
 }
 
+//fluid
+static void get_from_UI_fluid ( float * d, float * u, float * v, bool * solid )
+{
+    int i, j, size = (N_f+2)*(N_f+2);
+
+    for ( i=0 ; i<size ; i++ ) {
+        u[i] = v[i] = d[i] = 0.0f;
+    }
+
+    if(fluid_interaction){
+
+        if ( !mouse_down[0] && !mouse_down[1] && !mouse_down[2] ) return;
+
+        i = (int)((       mx /(float)win_x)*N_f+1);
+        j = (int)(((win_y-my)/(float)win_y)*N_f+1);
+
+        if ( i<1 || i>N_f || j<1 || j>N_f ) return;
+
+        if ( mouse_down[0] ) {
+            u[IX(i,j)] = force * (mx-omx);
+            v[IX(i,j)] = force * (omy-my);
+        }
+
+        if ( mouse_down[1] ) {
+            solid[IX(i,j)] = removeSolid;
+        }
+
+        if ( mouse_down[2] ) {
+            d[IX(i,j)] = source;
+        }
+
+        omx = mx;
+        omy = my;
+
+    }
+
+    return;
+}
+
 static void idle_func(void) {
     if (dsim) {
         for (int i = 0; i < N; i++) {
@@ -384,7 +610,14 @@ static void idle_func(void) {
 #endif
             state->advance(dt);
         }
+
         state->copy_to_particles(pVector);
+
+        // fluid
+        get_from_UI_fluid ( dens_prev, u_prev, v_prev, solid );
+        vel_step ( N_f, u, v, u_prev, v_prev, visc, dt_f, solid );
+        dens_step ( N_f, dens, dens_prev, u, v, diff, dt_f, solid );
+
 #ifdef STEP
         dsim = false;
 #endif
@@ -397,6 +630,10 @@ static void idle_func(void) {
 
 static void display_func(void) {
     pre_display();
+
+    // fluid
+    if ( dvel ) draw_velocity_fluid();
+    else		draw_density_fluid();
 
     draw_forces();
     draw_constraints();
@@ -452,12 +689,30 @@ int main(int argc, char **argv) {
         N = TIMESTEPS_PER_FRAME; 
         dt = 1.0 / (DUMP_FREQUENCY * TARGET_FPS * N);
         d = 5.f;
-        fprintf(stderr, "Using defaults : N=%d dt=%g d=%g\n",
+
+        //fluid
+        N_f = 64;
+        dt_f = 0.1f;
+        diff = 0.0f;
+        visc = 0.0f;
+        force = 5.0f;
+        source = 100.0f;
+
+        fprintf(stderr, "Using defaults for particle toy : N=%d dt=%g d=%g\n",
                 N, dt, d);
+        fprintf ( stderr, "Using defaults for fluid : N_f=%d dt_f=%g diff=%g visc=%g force = %g source=%g\n",
+                  N_f, dt_f, diff, visc, force, source );
     } else {
         N = atoi(argv[1]);
         dt = atof(argv[2]);
         d = atof(argv[3]);
+
+        N_f = atoi(argv[1]);
+        dt_f = atof(argv[2]);
+        diff = atof(argv[3]);
+        visc = atof(argv[4]);
+        force = atof(argv[5]);
+        source = atof(argv[6]);
     }
 
     printf("\n\nHow to use this application:\n\n");
@@ -480,9 +735,25 @@ int main(int argc, char **argv) {
     printf("\t Switch the solver to Simpletic Runge-Kutta with the '6' key\n");
 
 
+    printf ( "\n\nToggle on/off the fluid interaction controls with the 'f' key\n\n" );
+
+    printf ( "\n\nFluid interaction:\n\n" );
+    printf ( "\t Add densities with the right mouse button\n" );
+    printf ( "\t Add velocities with the left mouse button and dragging the mouse\n" );
+    printf ( "\t Add or remove solid cells with the middle mouse button\n \t Switch between adding/removing the solid cells by pressing the 'p' key \n" );
+    printf ( "\t Toggle density/velocity display with the 'v' key\n" );
+    printf ( "\t Clear the simulation by pressing the 'c' key\n" );
+
+
     dsim = 0;
     dump_frames = 0;
     frame_number = 0;
+
+    //fluid
+    dvel = 0;
+
+    if ( !allocate_data_fluid () ) exit ( 1 );
+    clear_data_fluid ();
 
     mouse_particle = new Particle(Vec2(0, 0));
 
