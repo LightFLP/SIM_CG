@@ -149,7 +149,6 @@ void vorticity_conf(float* u0, float* v0, int N, float* u, float* v) {
             dy = (float)(curl_arr[IX(i, j + 1)] - curl_arr[IX(i, j - 1)]);
 
             len = (float)sqrt(dx * dx + dy * dy) + 0.00001f;
-            //std::cout<<len;
 
             dx /= len;
             dy /= len;

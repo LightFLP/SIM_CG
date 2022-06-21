@@ -84,11 +84,6 @@ static float * dens, * dens_prev;
 static bool * solid;
 static bool removeSolid;
 
-//static int win_id;
-//static int win_x, win_y;
-//static int mouse_down[3];
-//static int omx_f, omy_f, mx_f, my_f;
-
 
 /*
 ----------------------------------------------------------------------
@@ -276,12 +271,12 @@ static void draw_velocity_fluid ( void )
 
     glBegin ( GL_LINES );
 
-    for ( i=1 ; i<=N_f*2 ; i++ ) {
-        x = i*h;
+    for ( i=1 ; i<=N_f ; i++ ) {
+        x = (i-0.5f)*h;
         x = x*2 -1;
 
-        for ( j=1 ; j<=N_f*2 ; j++ ) {
-            y = j*h;
+        for ( j=1 ; j<=N_f ; j++ ) {
+            y = (j-0.5f)*h;
             y = y*2 -1;
 
             glVertex2f ( x, y );
@@ -314,7 +309,7 @@ static void draw_density_fluid ( void )
 
     glBegin ( GL_QUADS );
 
-    for ( i=0 ; i<=N_f ; i++ ) {
+    for ( i=0 ; i<=N_f*2 ; i++ ) {
         x = i*h;
         x = x*2 -1;
         for ( j=0 ; j<=N_f*2 ; j++ ) {
@@ -437,12 +432,13 @@ static void key_func(unsigned char key, int x, int y) {
             // Toggle draw functions
         case 'v':
         case 'V':
-            if(!fluid_interaction){
-                show_velocity = !show_velocity;
-            }else{
+            if(fluid_interaction){
                 dvel = !dvel;
+            }else{
+                show_velocity = !show_velocity;
             }
             break;
+
         case 'b':
         case 'B':
             show_force = !show_force; break;
