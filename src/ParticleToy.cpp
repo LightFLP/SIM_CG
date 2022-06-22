@@ -14,6 +14,9 @@
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
+#include <math.h>
+#include <cstring>
+#include <algorithm>
 
 #include "Particle.h"
 #include "imageio.h"
@@ -83,6 +86,16 @@ static float * u, * v, * u_prev, * v_prev;
 static float * dens, * dens_prev;
 static bool * solid;
 static bool removeSolid;
+
+struct Body {
+    float center_of_mass_x;
+    float center_of_mass_y;
+    std::vector<int> position;
+};
+
+static std::vector<Body> bodies;
+static bool has_changed;
+
 
 
 /*
@@ -350,6 +363,83 @@ static void draw_density_fluid ( void )
     glEnd ();
 }
 
+// Depth first search the cells that connect horizontally or vertically
+static int has_neighbour ( std::vector<int> *objects, bool * solid, int i, int j )
+{
+    if (solid[IX(i, j)] && solid[IX(i + 1, j)]) {
+        has_neighbour(objects, solid, i + 1, j);
+        objects->push_back(IX(i + 1, j));
+    }
+    if (solid[IX(i, j)] && solid[IX(i, j + 1)]) {
+        has_neighbour(objects, solid, i, j + 1);
+        objects->push_back(IX(i, j + 1));
+    }
+    if (solid[IX(i, j)]) {
+        objects->push_back(IX(i, j));
+//        printf("%i, %i\n", i, j);
+    }
+    return -1;
+}
+
+// checks if there are any objects in the scene
+// it searches the grid using a DFS and groups the cells
+static void create_objects ( bool * solid )
+{
+    int i, j;
+
+    // loop over all cells in the grid and add the cell numbers that have neighbours to a giant array
+    std::vector<int> int_objects;
+    for ( i=1 ; i<N+2 ; i++ ) {
+        for ( j=1 ; j<N+2 ; j++ ) {
+            if (std::find(int_objects.begin(), int_objects.end(), IX(i, j)) == int_objects.end()) {
+                has_neighbour( &int_objects, solid, i, j ); // DFS
+                int_objects.push_back(-1); // spacer between solids
+            }
+        }
+    }
+
+    // thin out the array by removing the spacers (-1) and grouping them into individual arrays
+    Body body = Body();
+    for (i = 0; i < int_objects.size(); i++) {
+        while(int_objects[i] != -1) {
+            body.position.push_back(int_objects[i]);
+            i++;
+        }
+        if (!body.position.empty() && body.position[0] != -1) {
+            bodies.push_back(body);
+            body = Body();
+        }
+    }
+
+    // remove duplicates as the DFS isn't that smart
+    for (Body &o : bodies) {
+        std::sort(o.position.begin(), o.position.end());
+        o.position.erase(std::unique(o.position.begin(), o.position.end()), o.position.end());
+    }
+
+    // calculate center of mass
+    // all masses are the same so just get the center cell
+    float centerX, centerY;
+    for (Body o : bodies) {
+        centerX = centerY = 0;
+        for (int q : o.position) {
+            centerX += q % (N+2);
+            centerY += q / (N+2);
+        }
+        o.center_of_mass_x = centerX / o.position.size();
+        o.center_of_mass_y = centerY / o.position.size();
+    }
+
+    // print the number of solid objects currently in the scene
+//    printf("solid bodies=%i\n", bodies.size());
+
+//    for (Body o : bodies) {
+//        for (int q : o.position) {
+//            printf("%i ", q);
+//        }
+//        printf("\n");
+//    }
+}
 
 static void draw_forces(void) {
     for (Force *f: Force::_forces) {
@@ -584,7 +674,10 @@ static void get_from_UI_fluid ( float * d, float * u, float * v, bool * solid )
         }
 
         if ( mouse_down[1] ) {
-            solid[IX(i,j)] = removeSolid;
+            if (solid[IX(i,j)] != removeSolid) {
+                solid[IX(i,j)] = removeSolid;
+                has_changed = true;
+            }
         }
 
         if ( mouse_down[2] ) {
@@ -613,6 +706,12 @@ static void idle_func(void) {
 
         // fluid
         get_from_UI_fluid ( dens_prev, u_prev, v_prev, solid );
+
+        if (has_changed) {
+            create_objects ( solid );
+            has_changed = false;
+        }
+
         vel_step ( N_f, u, v, u_prev, v_prev, visc, dt_f, solid );
         dens_step ( N_f, dens, dens_prev, u, v, diff, dt_f, solid );
 
@@ -752,6 +851,9 @@ int main(int argc, char **argv) {
 
     if ( !allocate_data_fluid () ) exit ( 1 );
     clear_data_fluid ();
+
+    // check this once before running
+//    create_objects ( solid );
 
     mouse_particle = new Particle(Vec2(0, 0));
 
