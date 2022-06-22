@@ -35,11 +35,11 @@ public:
 //            mouse_particle->m_Position = Vec2(q, r);
 
 
-            Vec2 par_pos = globals->get_pos(i);
-            Vec2 par_vel = globals->get_vel(i);
-
-            int q = par_pos[0] * N_f + 1;
-            int r = par_pos[1] * N_f + 1;
+//            Vec2 par_pos = globals->get_pos(i);
+//            Vec2 par_vel = globals->get_vel(i);
+//
+//            int q = par_pos[0] * N_f + 1;
+//            int r = par_pos[1] * N_f + 1;
 
 //            int q = (par_pos[0] + 1) / 2;
 //            int r = (par_pos[1] + 1) / 2;

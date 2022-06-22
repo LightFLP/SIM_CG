@@ -26,9 +26,9 @@ void MouseSpringForce::calculate_forces(GlobalVars *globals) {
 
 void MouseSpringForce::draw() {
     glBegin(GL_LINES);
-    glColor3f(0.8, 0.7, 0.8);
+    glColor3f(0.0, 0.0, 0.0);
     glVertex2f(p0[0], p0[1]);
-    glColor3f(0.8, 0.7, 0.8);
+    glColor3f(1.0, 0.0, 0.0);
     glVertex2f(p1[0], p1[1]);
     glEnd();
 }
