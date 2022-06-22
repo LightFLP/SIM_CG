@@ -23,7 +23,7 @@
 
 void Scene::loadFluid(std::vector<Particle*>& pVector, bool *wind, bool *collision, double* dt, int N_f, float* u, float* v) {} // No particles, just fluid sim
 
-void Scene::loadDefault(std::vector<Particle*>& pVector, bool *wind, bool *collision, double* dt, int N_f, float* u, float* v, float* d) {
+void Scene::loadDefault(std::vector<Particle*>& pVector, bool *wind, bool *collision, double* dt, int N_f, float* u, float* v, float* dens) {
     const double dist = 0.2;
     const Vec2 center(0.0, 0.0);
     const Vec2 offset(dist, 0.0);
@@ -39,7 +39,7 @@ void Scene::loadDefault(std::vector<Particle*>& pVector, bool *wind, bool *colli
     Force::_forces.push_back(new DragForce(0.0005)); // drag
     Force::_forces.push_back(new WindForce(wind, dt)); // wind
     Force::_forces.push_back(new WallRepulsionForce(collision, -1, 1)); // wall
-    Force::_forces.push_back(new FluidForce(N_f, u, v, d)); //Fluid
+    Force::_forces.push_back(new FluidForce(N_f, u, v, dens)); //Fluid
 
     for (int i = 0; i < pVector.size(); i++){
 //        Force::_forces[0]->register_particle(i); // gravity
@@ -81,7 +81,7 @@ void Scene::loadDoubleCircle(std::vector<Particle*>& pVector, bool *wind, bool *
     Constraint::addConstraint(new RodConstraint(1, 2, dist));
 }
 
-void Scene::loadClothStatic(std::vector<Particle*>& pVector, bool *wind, bool *collision, double* dt, int N_f, float* u, float* v) {
+void Scene::loadClothStatic(std::vector<Particle*>& pVector, bool *wind, bool *collision, double* dt, int N_f, float* u, float* v, float* dens) {
 
     const double dist = 0.2;
     const Vec2 center(0.0, 0.0);
@@ -98,14 +98,18 @@ void Scene::loadClothStatic(std::vector<Particle*>& pVector, bool *wind, bool *c
     Force::_forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
     Force::_forces.push_back(new DragForce(0.0005)); // drag
     Force::_forces.push_back(new WindForce(wind, dt)); // wind
+    Force::_forces.push_back(new FluidForce(N_f, u, v, dens)); //Fluid
     WallRepulsionForce* wall_collision = new WallRepulsionForce(collision, -1, 1);
 
 
+
     for (int i = 0; i < pVector.size(); i++){
-        Force::_forces[0]->register_particle(i); // gravity
-        Force::_forces[1]->register_particle(i); // drag
-        Force::_forces[2]->register_particle(i); // wind
+//        Force::_forces[0]->register_particle(i); // gravity
+//        Force::_forces[1]->register_particle(i); // drag
+//        Force::_forces[2]->register_particle(i); // wind
+        Force::_forces[3]->register_particle(i); // fluid
         wall_collision->register_particle(i); // wall collision
+
     }
 
     const double kd_structural = 50.0;
@@ -152,7 +156,7 @@ void Scene::loadClothStatic(std::vector<Particle*>& pVector, bool *wind, bool *c
 }
 
 
-void Scene::loadClothWire(std::vector<Particle*>& pVector, bool *wind, bool *collision, double* dt, int N_f, float* u, float* v) {
+void Scene::loadClothWire(std::vector<Particle*>& pVector, bool *wind, bool *collision, double* dt, int N_f, float* u, float* v, float* dens) {
 
     const double dist = 0.05;
     const Vec2 center(0.0, 0.0);
@@ -169,12 +173,14 @@ void Scene::loadClothWire(std::vector<Particle*>& pVector, bool *wind, bool *col
     Force::_forces.push_back(new ConstantForce(Vec2(0, -9.81))); // gravity
     Force::_forces.push_back(new DragForce(0.0005)); // drag
     Force::_forces.push_back(new WindForce(wind, dt)); // wind
+    Force::_forces.push_back(new FluidForce(N_f, u, v, dens)); //Fluid
     WallRepulsionForce* wall_collision = new WallRepulsionForce(collision, -1, 1);
 
     for (int i = 0; i < pVector.size(); i++){
-        Force::_forces[0]->register_particle(i); // gravity
-        Force::_forces[1]->register_particle(i); // drag
-        Force::_forces[2]->register_particle(i); // wind
+//        Force::_forces[0]->register_particle(i); // gravity
+//        Force::_forces[1]->register_particle(i); // drag
+//        Force::_forces[2]->register_particle(i); // wind
+        Force::_forces[3]->register_particle(i); // fluid
         wall_collision->register_particle(i); // wall collision
     }
 
@@ -221,7 +227,7 @@ void Scene::loadClothWire(std::vector<Particle*>& pVector, bool *wind, bool *col
     }
 }
 
-void Scene::loadHairStatic(std::vector<Particle*>& pVector, bool *wind, bool *collision, double* dt, int N_f, float* u, float* v) {
+void Scene::loadHairStatic(std::vector<Particle*>& pVector, bool *wind, bool *collision, double* dt, int N_f, float* u, float* v, float* dens) {
 
     const Vec2 center(0.0, 0.0);
 
@@ -239,6 +245,7 @@ void Scene::loadHairStatic(std::vector<Particle*>& pVector, bool *wind, bool *co
     Force::_forces.push_back(new DragForce(0.0005)); // drag
     Force::_forces.push_back(new WindForce(wind, dt)); // wind
     Force::_forces.push_back(new WallRepulsionForce(collision, -1, 1)); // wall
+    Force::_forces.push_back(new FluidForce(N_f, u, v, dens)); //Fluid
 
     //Face particles
     pVector.push_back(new Particle(Vec2(center[0] + 0.1 , center[1] + 0.05)));
@@ -313,10 +320,11 @@ void Scene::loadHairStatic(std::vector<Particle*>& pVector, bool *wind, bool *co
     }
 
     for (int i = 0; i < pVector.size(); i++){
-        Force::_forces[0]->register_particle(i); // gravity
-        Force::_forces[1]->register_particle(i); // drag
-        Force::_forces[2]->register_particle(i); // wind
-        Force::_forces[3]->register_particle(i); // wall collision
+//        Force::_forces[0]->register_particle(i); // gravity
+//        Force::_forces[1]->register_particle(i); // drag
+//        Force::_forces[2]->register_particle(i); // wind
+//        Force::_forces[3]->register_particle(i); // wall collision
+        Force::_forces[4]->register_particle(i); // fluid
     }
 }
 

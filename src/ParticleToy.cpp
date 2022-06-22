@@ -159,11 +159,11 @@ static void init_system(void) {
         case 3:
             Scene::loadDoubleCircle(pVector, &blow_wind,&collision, &dts, N_f, u, v); break;
         case 4:
-            Scene::loadClothStatic(pVector, &blow_wind,&collision, &dts, N_f, u, v); break;
+            Scene::loadClothStatic(pVector, &blow_wind,&collision, &dts, N_f, u, v, dens); break;
         case 5:
-            Scene::loadClothWire(pVector, &blow_wind,&collision, &dts, N_f, u, v); break;
+            Scene::loadClothWire(pVector, &blow_wind,&collision, &dts, N_f, u, v, dens); break;
         case 6:
-            Scene::loadHairStatic(pVector, &blow_wind,&collision, &dts, N_f, u, v); break;
+            Scene::loadHairStatic(pVector, &blow_wind,&collision, &dts, N_f, u, v, dens); break;
         case 7:
             Scene::loadAngularSpring(pVector, &blow_wind,&collision, &dts, N_f, u, v); break;
         default:
