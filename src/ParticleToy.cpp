@@ -153,19 +153,21 @@ static void init_system(void) {
     // Load new scene
     switch (scene_int) {
         case 1:
-            Scene::loadDefault(pVector, &blow_wind, &collision, &dts); break;
+            Scene::loadFluid(pVector, &blow_wind, &collision, &dts, N_f, u, v); break;
         case 2:
-            Scene::loadDoubleCircle(pVector, &blow_wind,&collision, &dts); break;
+            Scene::loadDefault(pVector, &blow_wind, &collision, &dts, N_f, u, v); break;
         case 3:
-            Scene::loadClothStatic(pVector, &blow_wind,&collision, &dts); break;
+            Scene::loadDoubleCircle(pVector, &blow_wind,&collision, &dts, N_f, u, v); break;
         case 4:
-            Scene::loadClothWire(pVector, &blow_wind,&collision, &dts); break;
+            Scene::loadClothStatic(pVector, &blow_wind,&collision, &dts, N_f, u, v); break;
         case 5:
-            Scene::loadHairStatic(pVector, &blow_wind,&collision, &dts); break;
+            Scene::loadClothWire(pVector, &blow_wind,&collision, &dts, N_f, u, v); break;
         case 6:
-            Scene::loadAngularSpring(pVector, &blow_wind,&collision, &dts); break;
+            Scene::loadHairStatic(pVector, &blow_wind,&collision, &dts, N_f, u, v); break;
+        case 7:
+            Scene::loadAngularSpring(pVector, &blow_wind,&collision, &dts, N_f, u, v); break;
         default:
-            Scene::loadDefault(pVector, &blow_wind,&collision, &dts);
+            Scene::loadDefault(pVector, &blow_wind,&collision, &dts, N_f, u, v);
     }
     for (Particle *p: pVector) { p->reset(); }
     // Get list sizes
@@ -309,10 +311,10 @@ static void draw_density_fluid ( void )
 
     glBegin ( GL_QUADS );
 
-    for ( i=0 ; i<=N_f*2 ; i++ ) {
+    for ( i=0 ; i<=N_f ; i++ ) {
         x = i*h;
         x = x*2 -1;
-        for ( j=0 ; j<=N_f*2 ; j++ ) {
+        for ( j=0 ; j<=N_f ; j++ ) {
             y = j*h;
             y = y*2 -1;
 
