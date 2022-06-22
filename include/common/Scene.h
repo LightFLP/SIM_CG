@@ -24,7 +24,7 @@ class Scene {
 public:
     static void loadFluid(std::vector<Particle *> &pVector, bool *wind, bool *collision, double* dt, int N_f, float* u, float* v);
 
-    static void loadDefault(std::vector<Particle *> &pVector, bool *wind, bool *collision, double* dt, int N_f, float* u, float* v);
+    static void loadDefault(std::vector<Particle *> &pVector, bool *wind, bool *collision, double* dt, int N_f, float* u, float* v, float* d);
 
     static void loadDoubleCircle(std::vector<Particle *> &pVector, bool *wind, bool *collision, double* dt, int N_f, float* u, float* v);
 

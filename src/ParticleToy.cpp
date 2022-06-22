@@ -155,7 +155,7 @@ static void init_system(void) {
         case 1:
             Scene::loadFluid(pVector, &blow_wind, &collision, &dts, N_f, u, v); break;
         case 2:
-            Scene::loadDefault(pVector, &blow_wind, &collision, &dts, N_f, u, v); break;
+            Scene::loadDefault(pVector, &blow_wind, &collision, &dts, N_f, u, v, dens); break;
         case 3:
             Scene::loadDoubleCircle(pVector, &blow_wind,&collision, &dts, N_f, u, v); break;
         case 4:
@@ -167,7 +167,7 @@ static void init_system(void) {
         case 7:
             Scene::loadAngularSpring(pVector, &blow_wind,&collision, &dts, N_f, u, v); break;
         default:
-            Scene::loadDefault(pVector, &blow_wind,&collision, &dts, N_f, u, v);
+            Scene::loadDefault(pVector, &blow_wind,&collision, &dts, N_f, u, v, dens);
     }
     for (Particle *p: pVector) { p->reset(); }
     // Get list sizes

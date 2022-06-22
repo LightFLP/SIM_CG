@@ -20,11 +20,10 @@
 #include "WireConstraint.h"
 
 #define sqrt2 1.41421356237
-//#define IX(i,j) ((i)+(N_f+2)*(j))
 
 void Scene::loadFluid(std::vector<Particle*>& pVector, bool *wind, bool *collision, double* dt, int N_f, float* u, float* v) {} // No particles, just fluid sim
 
-void Scene::loadDefault(std::vector<Particle*>& pVector, bool *wind, bool *collision, double* dt, int N_f, float* u, float* v) {
+void Scene::loadDefault(std::vector<Particle*>& pVector, bool *wind, bool *collision, double* dt, int N_f, float* u, float* v, float* d) {
     const double dist = 0.2;
     const Vec2 center(0.0, 0.0);
     const Vec2 offset(dist, 0.0);
@@ -40,14 +39,14 @@ void Scene::loadDefault(std::vector<Particle*>& pVector, bool *wind, bool *colli
     Force::_forces.push_back(new DragForce(0.0005)); // drag
     Force::_forces.push_back(new WindForce(wind, dt)); // wind
     Force::_forces.push_back(new WallRepulsionForce(collision, -1, 1)); // wall
-//    Force::_forces.push_back(new FluidForce(N_f, u, v)); //Fluid
+    Force::_forces.push_back(new FluidForce(N_f, u, v, d)); //Fluid
 
     for (int i = 0; i < pVector.size(); i++){
-        Force::_forces[0]->register_particle(i); // gravity
-        Force::_forces[1]->register_particle(i); // drag
-        Force::_forces[2]->register_particle(i); // wind
-        Force::_forces[3]->register_particle(i); // wall
-//        Force::_forces[4]->register_particle(i); // fluid
+//        Force::_forces[0]->register_particle(i); // gravity
+//        Force::_forces[1]->register_particle(i); // drag
+//        Force::_forces[2]->register_particle(i); // wind
+//        Force::_forces[3]->register_particle(i); // wall
+        Force::_forces[4]->register_particle(i); // fluid
     }
 
     Force::_forces.push_back(new SpringForce(0, 1, dist, 50.0, 0.2));
